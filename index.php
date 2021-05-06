@@ -1,12 +1,16 @@
 <?php
+    session_start();
     require_once('./constants.php');
     require_once('./model/databaseFunctions.php');
     require_once('./model/ConnectionHolder.php');
     require_once('./model/Repository.php');
+    require_once('./model/RoleRepository.php');
+    require_once('./model/UserRepository.php');
     require_once('./controller/Controller.php');
     require_once('./controller/MainController.php');
     require_once('./controller/HomeController.php');
-
+    require_once('./controller/AuthenticationController.php');
+    
     /**
      * ETML
      * Autrice : Lucie Moulin

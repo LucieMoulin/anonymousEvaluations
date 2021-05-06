@@ -58,6 +58,7 @@ abstract class Controller {
             try {
                 return call_user_func_array(array($this, $action), $parameters);
             } catch (\Throwable $th) {
+                echo($th);//TODO RETIRER, UNIQUEMENT POUR DEBUG
                 return $this->displayError("invalidParameters");
             }
         } else {

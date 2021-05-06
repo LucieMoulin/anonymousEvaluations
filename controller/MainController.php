@@ -40,6 +40,9 @@ class MainController extends Controller {
             case 'home':
                 $selectedControler = new HomeController();
                 break;
+            case 'auth':
+                $selectedControler = new AuthenticationController();
+                break;
             default:
                 return $this->displayError("unknownController");
                 break;

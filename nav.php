@@ -20,13 +20,13 @@
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
-            <?php if(isset($_SESSION['user'])) : ?>
+            <?php if(isset($_SESSION['connectedUser'])) : ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= ROOT_DIR; ?>/index.php"><b>Se déconnecter</b></a>
+                    <a class="nav-link" href="<?= ROOT_DIR; ?>/auth/logout"><b><?= $_SESSION['connectedUser'] ?> - Se déconnecter</b></a>
                 </li>
             <?php else : ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= ROOT_DIR; ?>/index.php"><b>Se connecter</b></a>
+                    <a class="nav-link" href="<?= ROOT_DIR; ?>/auth/login"><b>Se connecter</b></a>
                 </li>
             <?php endif; ?>
         </ul>

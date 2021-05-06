@@ -34,7 +34,9 @@ class HomeController extends Controller {
      *
      * @return string
      */
-    protected function display(){
+    public function display(){
+
+        //TODO si personne de connecté, affichage de la page de connexion
         return "<p>Hello World!</p>";
     }
 }

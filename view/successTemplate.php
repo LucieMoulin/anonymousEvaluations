@@ -8,6 +8,6 @@
  *      successText : Texte du succès à afficher
  */
 ?>
-<div class="alert alert-success mt-3">
+<div class="alert alert-success mt-3 text-center">
     <?= $successText ?>
 </div>

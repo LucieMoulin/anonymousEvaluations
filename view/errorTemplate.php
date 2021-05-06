@@ -8,6 +8,6 @@
  *      errorText : Texte de l'erreur à afficher
  */
 ?>
-<div class="alert alert-danger mt-3">
+<div class="alert alert-danger mt-3 text-center">
     <?= $errorText ?>
 </div>
