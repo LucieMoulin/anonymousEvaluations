@@ -38,12 +38,12 @@ class RoleRepository implements Repository {
                 array(array("idRole", $id))
             );
         } else {
-            return TestsRepository::findAll();
+            return array();
         }
     }
 
     /**
-     * Insère ou modifie un rôle => la plateforme ne gère pas les rôles
+     * Insère ou modifie un rôle => la plateforme ne permet pas cette fonctionnalité
      *
      * @param Array $array
      * @return bool

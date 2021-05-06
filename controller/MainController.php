@@ -43,6 +43,9 @@ class MainController extends Controller {
             case 'auth':
                 $selectedControler = new AuthenticationController();
                 break;
+            case 'evaluation':
+                $selectedControler = new EvaluationController();
+                break;
             default:
                 return $this->displayError("unknownController");
                 break;

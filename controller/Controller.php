@@ -25,7 +25,8 @@ abstract class Controller {
      */
     protected $errors = array(
         "unknownAction" => "Action inconnue",
-        "invalidParameters" => "Paramètres invalides"
+        "invalidParameters" => "Paramètres invalides",
+        "notAllowed" => "Droits insuffisants"
     );
 
     /**
@@ -44,6 +45,27 @@ abstract class Controller {
             include('./view/errorTemplate.php');
             return ob_get_clean();
         }
+    }
+
+    /**
+     * Fonction de check si la personne connectée a la permission demandée
+     *
+     * @param string $permission Permission demandée
+     * @return bool
+     */
+    protected function isAllowed($permission){
+        if (!isset($_SESSION['idRole']) || !is_numeric($_SESSION['idRole'])) {
+            return false;
+        }
+    
+        $permissions = PermissionRepository::findRolePermissions($_SESSION['idRole']);
+
+        foreach($permissions as $rolePerm){
+            if($rolePerm['perCode'] == $permission){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

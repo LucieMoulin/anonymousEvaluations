@@ -48,9 +48,8 @@ class HomeController extends Controller {
      * @return string
      */
     protected function test(){
-        $userRepository = new UserRepository();
         $display = "Nombre d'utilisateurs : ";
-        $result = $userRepository->count();
+        $result = UserRepository::count();
         return $display.$result[0]['count'];
     }
 }

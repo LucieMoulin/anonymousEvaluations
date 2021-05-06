@@ -51,7 +51,7 @@ class UserRepository implements Repository {
                 array(array("idUser", $id))
             );
         } else {
-            return TestsRepository::findAll();
+            return array();
         }
     }
 

@@ -131,8 +131,7 @@ class AuthenticationController extends Controller {
             $login = $_POST['login'];
     
             if($name){
-                $userRepo = new UserRepository();
-                $user = $userRepo->findWithLogin($login);
+                $user = UserRepository::findWithLogin($login);
                 if(isset($user[0]['idUser'])){
                     $main = new MainController();
                     $_SESSION['connectedUser'] = $login;
@@ -164,8 +163,7 @@ class AuthenticationController extends Controller {
      * @return string
      */
     protected function create($login, $name){
-        $roleRepo = new RoleRepository();
-        $roles = $roleRepo->findAll();
+        $roles = RoleRepository::findAll();
         for($i = 0; $i < count($roles); $i++){
             if($roles[$i]['rolName'] == 'Admin'){
                 unset($roles[$i]);
@@ -182,13 +180,12 @@ class AuthenticationController extends Controller {
      * @return string
      */
     protected function formSubmitted(){
-        $userRepo = new UserRepository();
         if(isset($_SESSION['login']) && isset($_POST['lastName']) && isset($_POST['firstName']) && isset($_POST['role'])) {
             $user['login'] = $_SESSION['login'];
             $user['lastName'] = $_POST['lastName'];
             $user['firstName'] = $_POST['firstName'];
             $user['idRole'] = $_POST['role'];
-            if($userRepo->insertEditOne($user)){
+            if(UserRepository::insertEditOne($user)){
                 $_SESSION['connectedUser'] = $login;
                 $_SESSION['lastName'] = $user['lastName'];
                 $_SESSION['firstName'] = $user['firstName'];

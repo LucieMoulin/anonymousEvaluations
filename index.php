@@ -6,10 +6,13 @@
     require_once('./model/Repository.php');
     require_once('./model/RoleRepository.php');
     require_once('./model/UserRepository.php');
+    require_once('./model/PermissionRepository.php');
+    require_once('./model/GroupRepository.php');
     require_once('./controller/Controller.php');
     require_once('./controller/MainController.php');
     require_once('./controller/HomeController.php');
     require_once('./controller/AuthenticationController.php');
+    require_once('./controller/EvaluationController.php');
     
     /**
      * ETML
