@@ -37,7 +37,7 @@ class ConnectionHolder
             ConnectionHolder::$connection = new PDO(DB_HOST.'; dbname='.DB_NAME.';charset=UTF8', DB_USER, DB_PASS);
         } 
         catch(Exception $exception) {
-            echo("ERREUR : La connexion à la base de données a échoué.");
+            return "ERREUR : La connexion à la base de données a échoué.";
         }
     }
 }

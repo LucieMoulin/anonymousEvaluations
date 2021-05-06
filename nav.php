@@ -22,7 +22,7 @@
         <ul class="navbar-nav ml-auto">
             <?php if(isset($_SESSION['connectedUser'])) : ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= ROOT_DIR; ?>/auth/logout"><b><?= $_SESSION['connectedUser'] ?> - Se déconnecter</b></a>
+                    <a class="nav-link" href="<?= ROOT_DIR; ?>/auth/logout"><b>Bonjour <?= $_SESSION['firstName'] ?> <?= $_SESSION['lastName'] ?> (<?= $_SESSION['connectedUser'] ?>) - Se déconnecter</b></a>
                 </li>
             <?php else : ?>
                 <li class="nav-item">

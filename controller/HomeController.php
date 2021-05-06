@@ -18,7 +18,8 @@ class HomeController extends Controller {
      * @var Array 
      */
     public $actions = array(
-        "display"
+        "display",
+        "test"
     );
 
     /**
@@ -34,9 +35,22 @@ class HomeController extends Controller {
      *
      * @return string
      */
-    public function display(){
+    protected function display(){
 
         //TODO si personne de connecté, affichage de la page de connexion
+
         return "<p>Hello World!</p>";
+    }
+
+    /**
+     * Test de la connexion à la base de données
+     *
+     * @return string
+     */
+    protected function test(){
+        $userRepository = new UserRepository();
+        $display = "Nombre d'utilisateurs : ";
+        $result = $userRepository->count();
+        return $display.$result[0]['count'];
     }
 }

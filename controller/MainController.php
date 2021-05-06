@@ -34,7 +34,7 @@ class MainController extends Controller {
      * @param Array $parameters
      * @return string retourne le html d'affichage du résultat de l'action
      */
-    protected function dispatch($controller = "home", $action = "display", $parameters = array()) {
+    public function dispatch($controller = "home", $action = "display", $parameters = array()) {
         $selectedControler;
         switch($controller){
             case 'home':

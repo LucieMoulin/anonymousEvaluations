@@ -17,7 +17,20 @@ class UserRepository implements Repository {
             "SELECT
                 idUser, useLogin, useLastName, useFirstName, fkRole
                 FROM t_user
-                ORDER BY idUser useLastName ASC, useFirstName ASC;"
+                ORDER BY useLastName ASC, useFirstName ASC;"
+        );
+    }
+
+    /**
+     * Compte tous les utilisateurs
+     *
+     * @return Array
+     */
+    public static function count(){
+        return executeQuery(
+            "SELECT
+                Count(idUser) as count
+                FROM t_user;"
         );
     }
 
@@ -48,16 +61,16 @@ class UserRepository implements Repository {
      * @param string $login
      * @return Array
      */
-    public static function loginExists($login){        
+    public static function findWithLogin($login){        
         $result = executeQuery(
             "SELECT
-                idUser, useLogin
+                idUser, useLogin, useFirstName, useLastName, fkRole
                 FROM t_user
                 WHERE useLogin = :useLogin
                 LIMIT 1;",
             array(array("useLogin", $login))
         );
-        return isset($result[0]['idUser']);
+        return $result;
     }
 
     /**

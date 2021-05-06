@@ -112,12 +112,12 @@ class AuthenticationController extends Controller {
      * @return string
      */
     protected function logout(){
-        $homeController = new HomeController();
+        $main = new MainController();
         session_destroy();
         $successText = 'Déconnexion réussie';
         ob_start();
         include('./view/successTemplate.php');
-        return ob_get_clean().$homeController->display();
+        return ob_get_clean().$main->dispatch();
     }
 
     /**
@@ -132,13 +132,17 @@ class AuthenticationController extends Controller {
     
             if($name){
                 $userRepo = new UserRepository();
-                if($userRepo->loginExists($login)){
-                    $homeController = new HomeController();
+                $user = $userRepo->findWithLogin($login);
+                if(isset($user[0]['idUser'])){
+                    $main = new MainController();
                     $_SESSION['connectedUser'] = $login;
+                    $_SESSION['lastName'] = $user[0]['useLastName'];
+                    $_SESSION['firstName'] = $user[0]['useFirstName'];
+                    $_SESSION['idRole'] = $user[0]['fkRole'];
                     $successText = 'Connexion réussie';
                     ob_start();
                     include('./view/successTemplate.php');
-                    return ob_get_clean().$homeController->display();
+                    return ob_get_clean().$main->dispatch();
                 } else {
                     $_SESSION['login'] = $login;
                     $successText = 'Connexion réussie';
@@ -162,6 +166,11 @@ class AuthenticationController extends Controller {
     protected function create($login, $name){
         $roleRepo = new RoleRepository();
         $roles = $roleRepo->findAll();
+        for($i = 0; $i < count($roles); $i++){
+            if($roles[$i]['rolName'] == 'Admin'){
+                unset($roles[$i]);
+            }
+        }
         ob_start();
         include('./view/createAccount.php');
         return ob_get_clean();
@@ -181,6 +190,9 @@ class AuthenticationController extends Controller {
             $user['idRole'] = $_POST['role'];
             if($userRepo->insertEditOne($user)){
                 $_SESSION['connectedUser'] = $login;
+                $_SESSION['lastName'] = $user['lastName'];
+                $_SESSION['firstName'] = $user['firstName'];
+                $_SESSION['idRole'] = $user['idRole'];
                 $successText = 'Création du compte réussie';
                 ob_start();
                 include('./view/successTemplate.php');
