@@ -27,7 +27,7 @@ class EvaluationController extends Controller {
      */
     function __construct (){
         //Ajout des erreurs personnalisées de ce contrôleur
-        $this->errors["unknownAction"] = "Action inconnue pour le contrôleur d'accueil.";
+        $this->errors["unknownAction"] = "Action inconnue pour le contrôleur des évaluations.";
         $this->errors['insertionError'] = 'Erreur lors de l\'insertion de l\'évaluation.';
         $this->errors['uploadError'] = 'Erreur lors de l\'upload du fichier.';
         $this->errors['fileExists'] = 'Un fichier du même nom existe déjà.';
@@ -91,6 +91,7 @@ class EvaluationController extends Controller {
      * @return string
      */
     protected function create(){
+        //TODO vérification droits avancée
         if($this->isAllowed('CREATE_EVAL') && isset($_SESSION['connectedUser'])){
             $groups = GroupRepository::findOwned($_SESSION['connectedUser']);
 
@@ -108,6 +109,7 @@ class EvaluationController extends Controller {
      * @return string
      */
     protected function creationSubmitted(){
+        //TODO vérification droits avancée
         if($this->isAllowed('CREATE_EVAL') && isset($_SESSION['connectedUser'])){
             $fileName;
             $filePath = null;

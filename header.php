@@ -30,5 +30,10 @@
         flex-direction: column;
         justify-content: space-between;
     }
+
+    /* Style pour les barres de recherche datatables */
+    thead input {
+        width: 100%;
+    }
 </style>
 

@@ -59,6 +59,28 @@ class GroupRepository implements Repository {
     }
 
     /**
+     * Supprime un groupe par son id
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function deleteOne($id){
+        executeCommand(
+            "DELETE
+                FROM t_r_groupUser
+                WHERE fkGroup = :idGroup;",
+            array(array("idGroup", $id))
+        );
+        
+        return executeCommand(
+            "DELETE
+                FROM t_group
+                WHERE idGroup = :idGroup;",
+            array(array("idGroup", $id))
+        );
+    }
+
+    /**
      * Récupère un groupe créés par un utilisateur
      *
      * @param string $login
@@ -75,16 +97,37 @@ class GroupRepository implements Repository {
     }
 
     /**
-     * Récupère les identifiants des utilisateurs faisant partie du groupe
+     * Récupère la liste des identifiants des utilisateurs faisant partie du groupe
      *
      * @param string $login
      * @return Array
      */
     public static function getMembers($id){
-        return executeQuery(
+        $result = executeQuery(
             "SELECT
                 fkUser
                 FROM t_r_groupUser
+                WHERE fkGroup = :idGroup;",
+            array(array("idGroup", $id))
+        );
+        foreach ($result as $key => $user) {
+            $result[$key] = $user['fkUser'];
+        }
+        return $result;
+    }
+
+    /**
+     * Récupère la liste des utilisateurs faisant partie du groupe
+     *
+     * @param string $login
+     * @return Array
+     */
+    public static function getMembersName($id){
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useFirstName, useLastName
+                FROM t_r_groupUser
+                    JOIN t_user ON fkUser = idUser
                 WHERE fkGroup = :idGroup;",
             array(array("idGroup", $id))
         );
@@ -97,7 +140,57 @@ class GroupRepository implements Repository {
      * @return bool
      */
     public static function insertEditOne($array){
-        //TODO implémenter ajout de groupe
-        return false;
+        if(!isset($array['idGroup'])){
+            $array['idGroup'] = null;
+        }
+
+        if(isset($array['groName']) && isset($array['fkUser'])){
+            //Insertion du groupe
+            $result = executeCommand(
+                "INSERT
+                    INTO t_group (idGroup, groName, fkUser)
+                    VALUE (:idGroup, :groName, :fkUser)
+                ON DUPLICATE KEY UPDATE
+                    groName =:groName;",
+                array(
+                    array("idGroup",$array['idGroup']),
+                    array("groName",$array['groName']),
+                    array("fkUser",$array['fkUser'])
+                )
+            );
+
+            //Sauvegarde des membres du groupe
+            if($result){
+                if($array['idGroup'] == null){
+                    $array['idGroup'] = getLastInsertedID("t_group");
+                }
+                
+                executeCommand(
+                    "DELETE
+                        FROM t_r_groupUser
+                        WHERE fkGroup = :fkGroup;",
+                    array(
+                        array("fkGroup",$array['idGroup'])
+                    )
+                );
+
+                if(isset($array['students'])){
+                    foreach ($array['students'] as $key => $idUser) {
+                        executeCommand(
+                            "INSERT
+                                INTO t_r_groupUser (fkGroup, fkUser)
+                                VALUE (:fkGroup, :fkUser);",
+                            array(
+                                array("fkGroup",$array['idGroup']),
+                                array("fkUser",$idUser)
+                            )
+                        );
+                    }
+                }
+            }            
+            return $result;
+        } else {
+            return false;
+        }return ;
     }
 }

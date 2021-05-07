@@ -11,7 +11,7 @@
  */
 ?>
 <h1 class="text-center">Création de compte</h1>
-<p class="text-center">Bonjour <?= $login ?>. Bienvenue sur [Nom Plateforme].</p>
+<p class="text-center">Bonjour <?= $login ?>. Bienvenue sur EvAnon - Évaluations Anonymes.</p>
 
 <form action="<?= ROOT_DIR ?>/auth/formSubmitted" method="POST" class="mt-5">
     <div class="row form-group">

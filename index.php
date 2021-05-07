@@ -14,6 +14,7 @@
     require_once('./controller/HomeController.php');
     require_once('./controller/AuthenticationController.php');
     require_once('./controller/EvaluationController.php');
+    require_once('./controller/GroupController.php');
     
     /**
      * ETML
@@ -63,7 +64,7 @@
         include("./header.php");
     ?>
     
-    <title><?= "Site"//TODO récupération du titre de la page ?></title>
+    <title>EvAnon - Évaluations Anonymes</title>
 </head>
 <body>
     <div class="flex-wrapper">

@@ -2,7 +2,7 @@
 /**
  * ETML
  * Autrice : Lucie Moulin
- * Date: 06.05.2021
+ * Date: 07.05.2021
  * Description : Repository pour les évaluations
  */
 
@@ -110,6 +110,7 @@ class EvaluationRepository implements Repository {
         }
 
         if(isset($array['evaModuleNumber']) && isset($array['evaDate']) &&isset($array['evaLength']) &&isset($array['fkUser']) &&isset($array['fkGroup'])){
+            //Insertion de l'évaluation
             $result = executeCommand(
                 "INSERT
                     INTO t_evaluation (idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, fkUser, fkGroup, fkState)
@@ -133,6 +134,7 @@ class EvaluationRepository implements Repository {
                     $array['idEvaluation'] = getLastInsertedID("t_evaluation");
                 }
 
+                //Insertion des identifiants anonymes de chaque élève
                 foreach($array['anonymousIds'] as $idUser => $anonymousId){
                     executeCommand(
                         "INSERT
@@ -150,6 +152,5 @@ class EvaluationRepository implements Repository {
         } else {
             return false;
         }
-
     }
 }

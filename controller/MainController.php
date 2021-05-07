@@ -46,6 +46,9 @@ class MainController extends Controller {
             case 'evaluation':
                 $selectedControler = new EvaluationController();
                 break;
+            case 'group':
+                $selectedControler = new GroupController();
+                break;
             default:
                 return $this->displayError("unknownController");
                 break;

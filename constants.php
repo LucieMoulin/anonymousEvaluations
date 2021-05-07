@@ -12,6 +12,11 @@ defined('DB_NAME') || define('DB_NAME', 'db_anonymousevaluations');
 defined('DB_USER') || define('DB_USER', 'root');
 defined('DB_PASS') || define('DB_PASS', '');
 
+//Constantes de numéros de rôles/identifiants dans la base de donnée des rôles
+defined('ROLE_STUDENT') || define('ROLE_STUDENT', 1);
+defined('ROLE_TEACHER') || define('ROLE_TEACHER', 2);
+defined('ROLE_ADMIN') || define('ROLE_ADMIN', 3);
+
 //Constantes de numéros d'états/identifiants dans la base de donnée des états
 defined('STATE_WAITING') || define('STATE_WAITING', 1);
 defined('STATE_ACTIVE') || define('STATE_ACTIVE', 2);

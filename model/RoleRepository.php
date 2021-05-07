@@ -39,6 +39,22 @@ class RoleRepository implements Repository {
     }
 
     /**
+     * Retourne les utilisateurs ayant un rôle
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function findUsers($id){        
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useLastName, useFirstName, fkRole
+                FROM t_user
+                WHERE fkRole = :idRole;",
+            array(array("idRole", $id))
+        );
+    }
+
+    /**
      * Insère ou modifie un rôle => la plateforme ne permet pas cette fonctionnalité
      *
      * @param Array $array
