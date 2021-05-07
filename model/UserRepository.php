@@ -41,18 +41,14 @@ class UserRepository implements Repository {
      * @return Array
      */
     public static function findOne($id){
-        if(is_numeric($id)){
-            return executeQuery(
-                "SELECT
-                    idUser, useLogin, useLastName, useFirstName, fkRole
-                    FROM t_user
-                    WHERE idUser = :idUser
-                    LIMIT 1;",
-                array(array("idUser", $id))
-            );
-        } else {
-            return array();
-        }
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useLastName, useFirstName, fkRole
+                FROM t_user
+                WHERE idUser = :idUser
+                LIMIT 1;",
+            array(array("idUser", $id))
+        );
     }
 
     /**

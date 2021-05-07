@@ -28,18 +28,14 @@ class PermissionRepository implements Repository {
      * @return Array
      */
     public static function findOne($id){
-        if(is_numeric($id)){
-            return executeQuery(
-                "SELECT
-                    idPermission, perCode, perDescription
-                    FROM t_permission
-                    WHERE idPermission = :idPermission
-                    LIMIT 1;",
-                array(array("idPermission", $id))
-            );
-        } else {
-            return array();
-        }
+        return executeQuery(
+            "SELECT
+                idPermission, perCode, perDescription
+                FROM t_permission
+                WHERE idPermission = :idPermission
+                LIMIT 1;",
+            array(array("idPermission", $id))
+        );
     }
 
     /**

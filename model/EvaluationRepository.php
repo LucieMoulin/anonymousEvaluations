@@ -110,7 +110,7 @@ class EvaluationRepository implements Repository {
         }
 
         if(isset($array['evaModuleNumber']) && isset($array['evaDate']) &&isset($array['evaLength']) &&isset($array['fkUser']) &&isset($array['fkGroup'])){
-            return executeCommand(
+            $result = executeCommand(
                 "INSERT
                     INTO t_evaluation (idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, fkUser, fkGroup, fkState)
                     VALUE (:idEvaluation, :evaModuleNumber, :evaDate, :evaLength, :evaInstructions, :fkUser, :fkGroup, :fkState)
@@ -127,6 +127,26 @@ class EvaluationRepository implements Repository {
                     array("fkState",$array['fkState'])
                 )
             );
+
+            if($result && isset($array['anonymousIds'])){
+                if($array['idEvaluation'] == null){
+                    $array['idEvaluation'] = getLastInsertedID("t_evaluation");
+                }
+
+                foreach($array['anonymousIds'] as $idUser => $anonymousId){
+                    executeCommand(
+                        "INSERT
+                            INTO t_r_userEvaluation (fkEvaluation, fkUser, useAnonymousId)
+                            VALUE (:fkEvaluation, :fkUser, :useAnonymousId);",
+                        array(
+                            array("fkEvaluation",$array['idEvaluation']),
+                            array("fkUser",$idUser),
+                            array("useAnonymousId",$anonymousId)
+                        )
+                    );
+                }
+            }
+            return $result;
         } else {
             return false;
         }

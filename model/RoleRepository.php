@@ -28,18 +28,14 @@ class RoleRepository implements Repository {
      * @return Array
      */
     public static function findOne($id){
-        if(is_numeric($id)){
-            return executeQuery(
-                "SELECT
-                    idRole, rolName, rolDescription
-                    FROM t_role
-                    WHERE idRole = :idRole
-                    LIMIT 1;",
-                array(array("idRole", $id))
-            );
-        } else {
-            return array();
-        }
+        return executeQuery(
+            "SELECT
+                idRole, rolName, rolDescription
+                FROM t_role
+                WHERE idRole = :idRole
+                LIMIT 1;",
+            array(array("idRole", $id))
+        );
     }
 
     /**

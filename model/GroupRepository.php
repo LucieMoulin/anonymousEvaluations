@@ -48,18 +48,14 @@ class GroupRepository implements Repository {
      * @return Array
      */
     public static function findOne($id){
-        if(is_numeric($id)){
-            return executeQuery(
-                "SELECT
-                    idGroup, groName
-                    FROM t_group
-                    WHERE idGroup = :idGroup
-                    LIMIT 1;",
-                array(array("idGroup", $id))
-            );
-        } else {
-            return array();
-        }
+        return executeQuery(
+            "SELECT
+                idGroup, groName
+                FROM t_group
+                WHERE idGroup = :idGroup
+                LIMIT 1;",
+            array(array("idGroup", $id))
+        );
     }
 
     /**
@@ -75,6 +71,22 @@ class GroupRepository implements Repository {
                 FROM t_group 
                 WHERE fkUser = (SELECT idUser FROM t_user WHERE useLogin = :useLogin);",
             array(array("useLogin", $login))
+        );
+    }
+
+    /**
+     * Récupère les identifiants des utilisateurs faisant partie du groupe
+     *
+     * @param string $login
+     * @return Array
+     */
+    public static function getMembers($id){
+        return executeQuery(
+            "SELECT
+                fkUser
+                FROM t_r_groupUser
+                WHERE fkGroup = :idGroup;",
+            array(array("idGroup", $id))
         );
     }
 

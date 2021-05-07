@@ -38,6 +38,54 @@ class EvaluationController extends Controller {
     }
 
     /**
+     * Génère un tableau aléatoire d'identifiants anonymes
+     *
+     * @param integer $amount nombre d'identifiants
+     * @return Array
+     */
+    private static function generateAnonymousIds($amount) {
+        //Récupération des identifiants
+        $config = json_decode(file_get_contents(ANONYMOUS_CONFIG));
+
+        if(isset($config->anonymousIds)){            
+            $availableIndexes = array();
+
+            //Récupération des index des identifiants disponibles
+            foreach($config->anonymousIds as $key => $anonymousId){
+                if(isset($anonymousId->id) && isset($anonymousId->active) && $anonymousId->active) {
+                    $availableIndexes[] = $key;
+                }
+            }
+
+            //S'il y a assez d'identifiants disponibles, génération du nombre d'identifiants demandé
+            if(count($availableIndexes) >= $amount){
+                $genratedIds = array();
+                $count = count($availableIndexes) - 1;
+                for($i = 0; $i < $amount; $i++){
+                    //Sélection aléatoire d'un index disponible
+                    $randIndex = mt_rand(0,$count);
+                    $index = $availableIndexes[$randIndex];
+
+                    //Retirer cet index de la liste des index disponibles
+                    unset($availableIndexes[$randIndex]);
+                    $count--;
+                    $availableIndexes = array_values($availableIndexes);
+                    
+                    //Ajout de l'identifiant dans la liste des générés
+                    $genratedIds[] = $config->anonymousIds[$index];
+                }
+
+                return $genratedIds;
+            } else {
+                //TODO éventuellement gérer le cas ou on demande plus d'identifiants qu'il n'y en a dans la configuration
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Affichage du formulaire de création d'évaluation
      *
      * @return string
@@ -62,8 +110,8 @@ class EvaluationController extends Controller {
     protected function creationSubmitted(){
         if($this->isAllowed('CREATE_EVAL') && isset($_SESSION['connectedUser'])){
             $fileName;
-            $filePath;
-            if(isset($_FILES['instructions'])){
+            $filePath = null;
+            if(isset($_FILES['instructions']) && $_FILES['instructions']['name'] != NULL){
                 $fileName = time().'-'.basename($_FILES['instructions']['name']);
                 $filePath = getcwd().UPLOAD_DIR.$fileName;
                 $fileType = strtolower(pathinfo($filePath,PATHINFO_EXTENSION));
@@ -108,19 +156,27 @@ class EvaluationController extends Controller {
                 );
 
                 //Tentative d'upload du fichier
-                if (move_uploaded_file($_FILES['instructions']['tmp_name'], $filePath)) {
+                if ($filePath == NULL || move_uploaded_file($_FILES['instructions']['tmp_name'], $filePath)) {
+                    //Génération des identifiants anonymes 
+                    //TODO si modification, ne pas générer ces identifiants
+                    $groupMembersIds = GroupRepository::getMembers($_POST['group']);             
+                    $anonymousIds = EvaluationController::generateAnonymousIds(count($groupMembersIds));
+                    $evaluation['anonymousIds'] = array();
+                    for($i = 0; $i < count($groupMembersIds); $i++) {
+                        $evaluation['anonymousIds'][$groupMembersIds[$i]['fkUser']] = $anonymousIds[$i]->id;
+                    }
+
+                    //Sauvegarde en base de données
                     EvaluationRepository::insertEditOne($evaluation);
                     $successText = 'Évaluation ajoutée et upload du fichier réussi';
                 } else {
                     return $this->displayError('uploadError');
                 }
-
-                //TODO génération des identifiants anonymes
-
                 ob_start();
                 include('./view/successTemplate.php');
                 return ob_get_clean().$this->create();//TODO rediriger vers détails éval
             } catch (\Throwable $th) {
+                echo $th;
                 return $this->displayError('insertionError');
             }
         } else {
