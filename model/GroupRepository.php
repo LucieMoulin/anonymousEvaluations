@@ -22,6 +22,26 @@ class GroupRepository implements Repository {
     }
 
     /**
+     * Récupère tous les identifiants
+     *
+     * @return Array
+     */
+    public static function findAllIds(){
+        $result = executeQuery(
+            "SELECT
+                idGroup
+                FROM t_group
+                ORDER BY idGroup ASC;"
+        );
+
+        for($i = 0; $i < count($result); $i++) {
+            $result[$i] = $result[$i]['idGroup'];
+        }
+
+        return $result;
+    }
+
+    /**
      * Récupère un groupe par son id
      *
      * @param int $id

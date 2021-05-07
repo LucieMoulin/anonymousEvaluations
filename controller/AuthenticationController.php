@@ -186,7 +186,7 @@ class AuthenticationController extends Controller {
             $user['firstName'] = $_POST['firstName'];
             $user['idRole'] = $_POST['role'];
             if(UserRepository::insertEditOne($user)){
-                $_SESSION['connectedUser'] = $login;
+                $_SESSION['connectedUser'] = $_SESSION['login'];
                 $_SESSION['lastName'] = $user['lastName'];
                 $_SESSION['firstName'] = $user['firstName'];
                 $_SESSION['idRole'] = $user['idRole'];

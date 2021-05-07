@@ -58,6 +58,8 @@ abstract class Controller {
             return false;
         }
     
+        //TODO Vérification que le rôle corresponde au login
+        
         $permissions = PermissionRepository::findRolePermissions($_SESSION['idRole']);
 
         foreach($permissions as $rolePerm){

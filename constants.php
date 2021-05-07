@@ -11,6 +11,10 @@ defined('DB_HOST') || define('DB_HOST', 'mysql:host=localhost');
 defined('DB_NAME') || define('DB_NAME', 'db_anonymousevaluations');
 defined('DB_USER') || define('DB_USER', 'root');
 defined('DB_PASS') || define('DB_PASS', '');
+defined('STATE_WAITING') || define('STATE_WAITING', 1);
+defined('STATE_ACTIVE') || define('STATE_ACTIVE', 2);
+defined('STATE_CLOSED') || define('STATE_CLOSED', 3);
+defined('STATE_FINISHED') || define('STATE_FINISHED', 4);
 
 //Url du site
 defined('ROOT_DIR') || define('ROOT_DIR', '/anonymousEvaluations');

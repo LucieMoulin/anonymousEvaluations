@@ -18,6 +18,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="<?= ROOT_DIR; ?>">Accueil</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="<?= ROOT_DIR; ?>/evaluation/create">Créer une évaluation</a>
+            </li>
         </ul>
         <ul class="navbar-nav ml-auto">
             <?php if(isset($_SESSION['connectedUser'])) : ?>

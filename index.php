@@ -8,6 +8,7 @@
     require_once('./model/UserRepository.php');
     require_once('./model/PermissionRepository.php');
     require_once('./model/GroupRepository.php');
+    require_once('./model/EvaluationRepository.php');
     require_once('./controller/Controller.php');
     require_once('./controller/MainController.php');
     require_once('./controller/HomeController.php');
