@@ -19,7 +19,9 @@ class EvaluationController extends Controller {
      */
     public $actions = array(
         "create",
-        "creationSubmitted"
+        "creationSubmitted",
+        "details",
+        "changeState"
     );
 
     /**
@@ -35,6 +37,8 @@ class EvaluationController extends Controller {
         $this->errors['fileFormatUnaccepted'] = 'Le fichier sélectionné n\'est pas dans les formats acceptés : ';//TODO ajouter liste formats acceptés
         $this->errors['emptyFields'] = 'Merci de remplir tous les champs';
         $this->errors['invalidGroup'] = 'Le numéro du groupe est invalide';
+        $this->errors['invalidEvaluation'] = 'Cette évaluation est invalide';
+        $this->errors['invalidState'] = 'L\'état demandé n\'existe pas';
     }
 
     /**
@@ -83,6 +87,39 @@ class EvaluationController extends Controller {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Fonction de recherche d'un login dans un tableau de participants
+     *
+     * @param string $login
+     * @param Array $array
+     * @return bool
+     */
+    private static function in_participants_array($login, $array) {
+        foreach ($array as $participant) {
+            if(isset($participant['useLogin']) && $participant['useLogin'] == $login) {
+                return true;
+            }
+        }
+    
+        return false;
+    }
+
+    /**
+     * Fonction de vérification que l'état fourni est bien un id d'état
+     *
+     * @param int $state
+     * @return bool
+     */
+    private static function is_state($id) {
+        $states = EvaluationRepository::findAllStates();
+        foreach ($states as $state) {
+            if(isset($state['idState']) && $state['idState'] == $id) {
+                return true;
+            }
+        }    
+        return false;
     }
 
     /**
@@ -178,8 +215,69 @@ class EvaluationController extends Controller {
                 include('./view/successTemplate.php');
                 return ob_get_clean().$this->create();//TODO rediriger vers détails éval
             } catch (\Throwable $th) {
-                echo $th;
                 return $this->displayError('insertionError');
+            }
+        } else {
+            return $this->displayError('notAllowed');
+        }
+    }
+
+    /**
+     * Affichage des détails d'une évaluation
+     *
+     * @param int $id
+     * @return string
+     */
+    protected function details($id){
+        //Récupération du propriétaire de l'évaluation et des participants, vérification des droits
+        $owner = EvaluationRepository::getOwner($id);
+        $participants = EvaluationRepository::getParticipants($id);
+        if($this->isAllowed('SEE_EVAL_ALL') ||
+            ($this->isAllowed('SEE_EVAL_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']) ||
+            ($this->isAllowed('SEE_EVAL') && isset($_SESSION['connectedUser']) && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants))) {
+
+            //Récupération de l'évaluation
+            $evaluation = EvaluationRepository::findOne($id);
+            if(isset($evaluation[0])){
+                $evaluation = $evaluation[0];
+
+                //Vérification des droits de modification d'état
+                $displayState = $this->isAllowed('EDIT_STATE_ALL') || ($this->isAllowed('EDIT_STATE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
+
+                //Affichage de la vue de détails d'une évaluation
+                ob_start();
+                include('./view/evaluationDetails.php');
+                return ob_get_clean();
+            } else {
+                return $this->displayError('invalidEvaluation');
+            }
+        } else {
+            return $this->displayError('notAllowed');
+        }
+    }
+
+    /**
+     * Change l'état d'une évaluation
+     *
+     * @param int $id
+     * @param int $state
+     * @return string
+     */
+    protected function changeState($id, $state){
+        //Vérification des droits
+        $owner = EvaluationRepository::getOwner($id);
+        if($this->isAllowed('EDIT_STATE_ALL') || ($this->isAllowed('EDIT_STATE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
+
+            if(EvaluationController::is_state($state)){
+                EvaluationRepository::changeState($id, $state);
+    
+                //Affichage d'un message de succès et de la vue de détails d'une évaluation
+                $successText = "État modifié avec succès";
+                ob_start();
+                include('./view/successTemplate.php');
+                return ob_get_clean().$this->details($id);
+            } else {
+                return $this->displayError('invalidState');
             }
         } else {
             return $this->displayError('notAllowed');

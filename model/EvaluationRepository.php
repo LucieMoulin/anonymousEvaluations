@@ -82,10 +82,47 @@ class EvaluationRepository implements Repository {
     public static function findOne($id) {
         return executeQuery(
             "SELECT
-                idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, fkUser, fkGroup, fkState
+                idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, fkUser, fkGroup, fkState, staName
                 FROM t_evaluation
+                    JOIN t_state ON idState = fkState
                 WHERE idEvaluation = :idEvaluation
                 ORDER BY evaDate DESC;",
+            array(array("idEvaluation", $id))
+        );
+    }
+
+    /**
+     * Récupère le propriétaire d'une évaluation
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function getOwner($id) {
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useFirstName, useLastName
+                FROM t_evaluation
+                    JOIN t_user
+                    ON fkUser = idUser
+                WHERE idEvaluation = :idEvaluation;",
+            array(array("idEvaluation", $id))
+        );
+    }
+
+    /**
+     * Récupère les participants à une évaluation
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function getParticipants($id) {
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useFirstName, useLastName
+                FROM t_r_userEvaluation
+                    JOIN t_user
+                    ON fkUser = idUser
+                WHERE fkEvaluation = :idEvaluation;",
             array(array("idEvaluation", $id))
         );
     }
@@ -152,5 +189,40 @@ class EvaluationRepository implements Repository {
         } else {
             return false;
         }
+    }
+    
+    /**
+     * Modifie l'état d'une évaluation
+     *
+     * @param int $id
+     * @param int $state
+     * @return Array
+     */
+    public static function changeState($id, $state){
+        //Insertion de l'évaluation
+        return executeCommand(
+            "UPDATE
+                t_evaluation
+                SET fkState = :idState;
+                WHERE idEvaluation = :idEvaluation",
+            array(
+                array("idEvaluation",$id),
+                array("idState",$state)
+            )
+        );
+    }
+    
+    /**
+     * Récupère tous les états possibles
+     *
+     * @return Array
+     */
+    public static function findAllStates(){
+        //Insertion de l'évaluation
+        return executeQuery(
+            "SELECT
+                idState, staName
+                FROM t_state;"
+        );
     }
 }
