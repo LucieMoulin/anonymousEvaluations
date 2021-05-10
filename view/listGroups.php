@@ -6,6 +6,7 @@
  * Description : Liste des groupes
  * Paramètres :
  *      $groups => Tableau contenant les groupes
+ *      $showOwner => Booléen définissant si la vue doit afficher le propriétaire du groupe
  */
 ?>
 <h1 class="text-center">Liste des groupes</h1>
@@ -13,6 +14,13 @@
     <thead>
         <tr>
             <th>Nom</th>
+            <?php
+                if($showOwner) :
+            ?>
+            <th>Propriétaire</th>
+            <?php
+                endif;
+            ?>
             <th>Membres</th>
         </tr>
     </thead>
@@ -26,6 +34,13 @@
                         <?= $group['groName'] ?>
                     </a>
                 </td>
+                <?php
+                    if($showOwner && isset($group['owner'])) :
+                ?>
+                <td><?= $group['owner'] ?></td>
+                <?php
+                    endif;
+                ?>
                 <td>
                     <?php
                         foreach ($group['students'] as $student) :

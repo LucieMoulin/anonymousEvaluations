@@ -42,14 +42,36 @@ class GroupController extends Controller {
      * @return string
      */
     protected function list(){
-        //TODO vérification droits        
-        $groups = GroupRepository::findOwned($_SESSION['connectedUser']);
-        foreach ($groups as $key => $group) {
-            $groups[$key]['students'] = GroupRepository::getMembersName($group['idGroup']);
+        //Vérification des droits
+        if($this->isAllowed('EDIT_GROUP_ALL')){
+            //Récupération de tous les groupes, leur propriétaire et leurs membres
+            $groups = GroupRepository::findAll();
+            foreach ($groups as $key => $group) {
+                $groups[$key]['students'] = GroupRepository::getMembersName($group['idGroup']);
+                $owner = GroupRepository::getOwner($group['idGroup']);
+                $groups[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
+            }
+            $showOwner = true;
+            
+            //Affichage de la vue de liste des groupes
+            ob_start();
+            include('./view/listGroups.php');
+            return ob_get_clean();
+        } else if($this->isAllowed('EDIT_GROUP_OWN')){
+            //Récupération des groupes de la personne connectée et leurs membres
+            $groups = GroupRepository::findOwned($_SESSION['connectedUser']);
+            foreach ($groups as $key => $group) {
+                $groups[$key]['students'] = GroupRepository::getMembersName($group['idGroup']);
+            }
+            $showOwner = false;
+
+            //Affichage de la vue de liste des groupes
+            ob_start();
+            include('./view/listGroups.php');
+            return ob_get_clean();
+        } else {
+            return $this->displayError('notAllowed');
         }
-        ob_start();
-        include('./view/listGroups.php');
-        return ob_get_clean();
     }
 
     /**
@@ -58,12 +80,20 @@ class GroupController extends Controller {
      * @return string
      */
     protected function create(){
-        //TODO vérification droits
-        unset($_SESSION['idGroup']);
-        $students = RoleRepository::findUsers(ROLE_STUDENT);
-        ob_start();
-        include('./view/createGroup.php');
-        return ob_get_clean();
+        //Vérification des droits de création de groupe
+        if($this->isAllowed('CREATE_GROUP')){
+            unset($_SESSION['idGroup']);
+
+            //Récupération de tous les élèves
+            $students = RoleRepository::findUsers(ROLE_STUDENT);
+
+            //Affichage de la vue de création d'un groupe
+            ob_start();
+            include('./view/createGroup.php');
+            return ob_get_clean();
+        } else {
+            return $this->displayError('notAllowed');
+        }
     }
 
     /**
@@ -72,20 +102,31 @@ class GroupController extends Controller {
      * @return string
      */
     protected function edit($id){
-        //TODO vérification droits
-        $students = RoleRepository::findUsers(ROLE_STUDENT);
-        $group = GroupRepository::findOne($id);
-        if(isset($group[0]['idGroup'])){
-            $group = $group[0];
+        //Récupération du propriétaire du groupe et vérification des droits
+        $owner = GroupRepository::getOwner($id);
+        if($this->isAllowed('EDIT_GROUP_ALL') || ($this->isAllowed('EDIT_GROUP_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
+
+            //Récupération du groupe et de tous les élèves
+            $students = RoleRepository::findUsers(ROLE_STUDENT);
+            $group = GroupRepository::findOne($id);
+            if(isset($group[0]['idGroup'])){
+                $group = $group[0];
+            }
+
+            //Récupération des membres du groupe
+            $members = GroupRepository::getMembers($id);
+            foreach ($students as $key => $student) {
+                $students[$key]['isMember'] = in_array($student['idUser'], $members);
+            }
+            $_SESSION['idGroup'] = $id;
+
+            //Affichage de la vue de modification du groupe
+            ob_start();
+            include('./view/createGroup.php');
+            return ob_get_clean();
+        } else {
+            return $this->displayError('notAllowed');
         }
-        $members = GroupRepository::getMembers($id);
-        foreach ($students as $key => $student) {
-            $students[$key]['isMember'] = in_array($student['idUser'], $members);
-        }
-        $_SESSION['idGroup'] = $id;
-        ob_start();
-        include('./view/createGroup.php');
-        return ob_get_clean();
     }
 
     /**
@@ -94,33 +135,49 @@ class GroupController extends Controller {
      * @return string
      */
     protected function formSubmitted(){
-        //TODO vérification droits
-        if(isset($_POST['name']) && $_POST['name'] != NULL) {
-            $group = array();
-            if(isset($_SESSION['idGroup'])){
-                $group['idGroup'] = $_SESSION['idGroup'];
-            }
-            $group['groName'] = $_POST['name'];
-            $username = UserRepository::findWithLogin($_SESSION['connectedUser']);
-            $group['fkUser'] = $username[0]['idUser'];
-            if(isset($_POST['student'])){
-                foreach ($_POST['student'] as $key => $value) {
-                    if($value == 'on'){
-                        $group['students'][] = $key;
+        if(isset($_SESSION['idGroup'])){
+            
+            //Récupération du propriétaire du groupe modifié et vérification des droits
+            $owner = GroupRepository::getOwner($_SESSION['idGroup']);
+            if($this->isAllowed('EDIT_GROUP_ALL') || ($this->isAllowed('EDIT_GROUP_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
+
+                //Validation basique du formulaire
+                if(isset($_POST['name']) && $_POST['name'] != NULL) {
+                    $group = array();
+                    if(isset($_SESSION['idGroup'])){
+                        $group['idGroup'] = $_SESSION['idGroup'];
                     }
+                    $group['groName'] = $_POST['name'];
+                    $username = UserRepository::findWithLogin($_SESSION['connectedUser']);
+                    $group['fkUser'] = $username[0]['idUser'];
+                    if(isset($_POST['student'])){
+                        foreach ($_POST['student'] as $key => $value) {
+                            if($value == 'on'){
+                                $group['students'][] = $key;
+                            }
+                        }
+                    }
+
+                    //Insertion dans la base de données du groupe
+                    if(GroupRepository::insertEditOne($group)){
+                        
+                        //Affichage d'un message de succès et de la liste des groupes
+                        $successText = isset($_SESSION['idGroup']) ? 'Modification du groupe réussie' : 'Création du groupe réussie';
+                        unset($_SESSION['idGroup']);
+                        ob_start();
+                        include('./view/successTemplate.php');
+                        return ob_get_clean().$this->list();
+                    } else {
+                        return isset($_SESSION['idGroup']) ? $this->displayError('editionFailed') : $this->displayError('creationFailed');
+                    }
+                } else {
+                    return isset($_SESSION['idGroup']) ? $this->displayError('editionFailed') : $this->displayError('creationFailed');
                 }
-            }
-            if(GroupRepository::insertEditOne($group)){
-                
-                $successText = isset($_SESSION['idGroup']) ? 'Modification du groupe réussie' : 'Création du groupe réussie';
-                ob_start();
-                include('./view/successTemplate.php');
-                return ob_get_clean().$this->list();
             } else {
-                return isset($_SESSION['idGroup']) ? $this->displayError('editionFailed') : $this->displayError('creationFailed');
+                return $this->displayError('notAllowed');
             }
         } else {
-            return isset($_SESSION['idGroup']) ? $this->displayError('editionFailed') : $this->displayError('creationFailed');
+            return $this->displayError('creationFailed');
         }
     }
 
@@ -131,17 +188,23 @@ class GroupController extends Controller {
      * @return string
      */ 
     protected function delete(){
-        //TODO vérification droits
-
         if(isset($_SESSION['idGroup'])){
-            GroupRepository::deleteOne($_SESSION['idGroup']);
-            $successText = "Groupe supprimé";
-            ob_start();
-            include('./view/successTemplate.php');
-            return ob_get_clean().$this->list();
+
+            //Récupération du propriétaire du groupe et vérification des droits
+            $owner = GroupRepository::getOwner($_SESSION['idGroup']);
+            if($this->isAllowed('EDIT_GROUP_ALL') || ($this->isAllowed('EDIT_GROUP_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
+                GroupRepository::deleteOne($_SESSION['idGroup']);
+
+                //Affichage d'un message de succès et de la liste des groupes
+                $successText = "Groupe supprimé";
+                ob_start();
+                include('./view/successTemplate.php');
+                return ob_get_clean().$this->list();
+            } else {
+                return $this->displayError('notAllowed');
+            }
         } else {
             return $this->displayError('deletionFailed').$this->list();
         }
-        
     }
 }

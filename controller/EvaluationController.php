@@ -91,8 +91,7 @@ class EvaluationController extends Controller {
      * @return string
      */
     protected function create(){
-        //TODO vérification droits avancée
-        if($this->isAllowed('CREATE_EVAL') && isset($_SESSION['connectedUser'])){
+        if($this->isAllowed('CREATE_EVAL')){
             $groups = GroupRepository::findOwned($_SESSION['connectedUser']);
 
             ob_start();
@@ -109,8 +108,9 @@ class EvaluationController extends Controller {
      * @return string
      */
     protected function creationSubmitted(){
-        //TODO vérification droits avancée
-        if($this->isAllowed('CREATE_EVAL') && isset($_SESSION['connectedUser'])){
+        //TODO vérification des droits pour la modification
+        //TODO implémentation de la modification
+        if($this->isAllowed('CREATE_EVAL')){
             $fileName;
             $filePath = null;
             if(isset($_FILES['instructions']) && $_FILES['instructions']['name'] != NULL){
@@ -165,7 +165,7 @@ class EvaluationController extends Controller {
                     $anonymousIds = EvaluationController::generateAnonymousIds(count($groupMembersIds));
                     $evaluation['anonymousIds'] = array();
                     for($i = 0; $i < count($groupMembersIds); $i++) {
-                        $evaluation['anonymousIds'][$groupMembersIds[$i]['fkUser']] = $anonymousIds[$i]->id;
+                        $evaluation['anonymousIds'][$groupMembersIds[$i]] = $anonymousIds[$i]->id;
                     }
 
                     //Sauvegarde en base de données

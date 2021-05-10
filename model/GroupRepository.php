@@ -97,6 +97,24 @@ class GroupRepository implements Repository {
     }
 
     /**
+     * Récupère le nom et prénom du propriétaire du groupe
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function getOwner($id){
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useFirstName, useLastName
+                FROM t_group
+                    JOIN t_user ON idUser = fkUser
+                WHERE idGroup = :idGroup;",
+            array(array("idGroup", $id))
+        );
+    }
+
+
+    /**
      * Récupère la liste des identifiants des utilisateurs faisant partie du groupe
      *
      * @param string $login
