@@ -21,7 +21,8 @@ class EvaluationController extends Controller {
         "create",
         "creationSubmitted",
         "details",
-        "changeState"
+        "changeState",
+        "list"
     );
 
     /**
@@ -120,6 +121,30 @@ class EvaluationController extends Controller {
             }
         }    
         return false;
+    }
+
+    /**
+     * Récupère la liste d'affichage des évaluations d'une personne avec un état spécifique
+     *
+     * @param int $idUser
+     * @param int $idState
+     * @param Array $name
+     * @return string
+     */
+    private static function getOwnEvaluationsListWithState($idUser, $idState, $name){
+        //Récupération des évaluations
+        $evaluations = EvaluationRepository::findOwnWithState($idUser, $idState);
+        if(count($evaluations) > 0){
+            $showOwner = false;
+            $title = 'Liste des évaluations '.$name[1];
+
+            //Affichage de la liste des évaluations            
+            ob_start();
+            include('./view/listEvals.php');
+            return ob_get_clean();
+        } else {
+            return '<h2 class="mt-4 text-center">Aucune évaluation '.$name[0].'</h2>';
+        }
     }
 
     /**
@@ -282,5 +307,46 @@ class EvaluationController extends Controller {
         } else {
             return $this->displayError('notAllowed');
         }
+    }
+
+    /**
+     * Affichage de la liste des évaluations
+     *
+     * @return string
+     */
+    protected function list(){
+        if($this->isAllowed('SEE_EVAL_ALL')) {
+            //Récupération de toutes les évaluations et leur propriétaire
+            $evaluations = EvaluationRepository::findAll();
+            foreach ($evaluations as $key => $eval) {
+                $owner = EvaluationRepository::getOwner($eval['idEvaluation']);
+                $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
+            }
+            $showOwner = true;
+            $title = "Liste de toutes les évaluations";
+
+            //Affichage de la liste des évaluations            
+            ob_start();
+            include('./view/listEvals.php');
+            return ob_get_clean();
+        } else if ($this->isAllowed('SEE_EVAL_OWN')) {
+            $idUser = UserRepository::findWithLogin($_SESSION['connectedUser']);
+            if(isset($idUser[0]['idUser'])){
+                $idUser = $idUser[0]['idUser'];
+
+                //Récupération et préparation de la vue des évaluations
+                $display = EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_WAITING, array('en attente', 'en attente'));
+                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_ACTIVE, array('activée', 'activées'));
+                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_CLOSED, array('clôturée', 'clôturées'));
+                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_FINISHED, array('terminée', 'terminées'));
+                
+                return $display;
+            }
+        } else if ($this->isAllowed('SEE_EVAL')) {
+            
+        } else {
+            return $this->displayError('notAllowed');
+        }
+
     }
 }

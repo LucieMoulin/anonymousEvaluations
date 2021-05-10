@@ -203,8 +203,8 @@ class EvaluationRepository implements Repository {
         return executeCommand(
             "UPDATE
                 t_evaluation
-                SET fkState = :idState;
-                WHERE idEvaluation = :idEvaluation",
+                SET fkState = :idState
+                WHERE idEvaluation = :idEvaluation;",
             array(
                 array("idEvaluation",$id),
                 array("idState",$state)

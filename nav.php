@@ -23,6 +23,7 @@
                     Évaluations
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarTestDropdown">
+                    <a class="dropdown-item" href="<?= ROOT_DIR; ?>/evaluation/list">Liste des évaluations</a>
                     <a class="dropdown-item" href="<?= ROOT_DIR; ?>/evaluation/create">Créer une évaluation</a>
                 </div>
             </li>
