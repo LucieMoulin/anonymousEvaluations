@@ -101,9 +101,10 @@ class EvaluationRepository implements Repository {
     public static function findOne($id) {
         return executeQuery(
             "SELECT
-                idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, fkUser, fkGroup, fkState, staName
+                idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, t_evaluation.fkUser, fkGroup, fkState, staName, groName
                 FROM t_evaluation
                     JOIN t_state ON idState = fkState
+                    JOIN t_group ON idGroup = fkGroup
                 WHERE idEvaluation = :idEvaluation
                 ORDER BY evaDate DESC;",
             array(array("idEvaluation", $id))
@@ -143,6 +144,24 @@ class EvaluationRepository implements Repository {
                     ON fkUser = idUser
                 WHERE fkEvaluation = :idEvaluation;",
             array(array("idEvaluation", $id))
+        );
+    }
+    
+    /**
+     * Récupère les informations sur un participant à une éval
+     *
+     * @param string $login
+     * @param int $idEvaluation
+     * @return Array
+     */
+    public static function getParticipant($login, $idEvaluation) {
+        return executeQuery(
+            "SELECT
+                fkUser, fkEvaluation, useAnonymousId, useReturn, useGrade, useComment
+                FROM t_r_userEvaluation
+                WHERE fkEvaluation = :idEvaluation AND fkUser = (SELECT idUser FROM t_user WHERE useLogin = :login)
+                LIMIT 1;",
+            array(array("idEvaluation", $idEvaluation),array("login", $login))
         );
     }
 

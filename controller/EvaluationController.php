@@ -91,6 +91,27 @@ class EvaluationController extends Controller {
     }
 
     /**
+     * Récupère les détails d'un identifiant anonyme
+     *
+     * @param int $id
+     * @return Array
+     */
+    private static function getAnonymousIdDetails($id){        
+        $config = json_decode(file_get_contents(ANONYMOUS_CONFIG), true);
+        $index = -1;
+        foreach ($config['anonymousIds'] as $key => $anonymousId) {
+            if ($anonymousId['id'] == $id) {
+                $index = $key;
+                break;
+            }
+        }
+
+        if($index != -1){
+            return $config['anonymousIds'][$index];
+        }
+    }
+
+    /**
      * Fonction de recherche d'un login dans un tableau de participants
      *
      * @param string $login
@@ -266,9 +287,22 @@ class EvaluationController extends Controller {
             $evaluation = EvaluationRepository::findOne($id);
             if(isset($evaluation[0])){
                 $evaluation = $evaluation[0];
+                $evaluation['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
+                
+                if(EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants)){
+                    $participant = EvaluationRepository::getParticipant($_SESSION['connectedUser'], $id);
+                    $evaluation['anonymousId'] = EvaluationController::getAnonymousIdDetails($participant[0]['useAnonymousId']);
+                    $evaluation['anonymousReturn'] = $participant[0]['useReturn'];
+                    $evaluation['evaGrade'] = $participant[0]['useGrade'];
+                    $evaluation['evaComment'] = $participant[0]['useComment'];
+                }
 
                 //Vérification des droits de modification d'état
                 $displayState = $this->isAllowed('EDIT_STATE_ALL') || ($this->isAllowed('EDIT_STATE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
+                $displayEditButton = $this->isAllowed('EDIT_EVAL_ALL') || ($this->isAllowed('EDIT_EVAL_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
+                $displayId = $this->isAllowed('RETURN') && isset($evaluation['anonymousId']['id']) && $evaluation['anonymousId']['id'] != null;
+                $displayResult = $this->isAllowed('RETURN') && isset($evaluation['evaGrade']) && $evaluation['evaGrade'] != null;
+                $displayReturn = $this->isAllowed('RETURN');
 
                 //Affichage de la vue de détails d'une évaluation
                 ob_start();
