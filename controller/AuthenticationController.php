@@ -150,10 +150,10 @@ class AuthenticationController extends Controller {
                     return ob_get_clean().$this->create($login, $name);
                 }
             } else {
-                return $this->displayError('authenticationFailed');
+                return $this->displayError('authenticationFailed').$this->login();
             }
         } else {
-            return $this->displayError('authenticationFailed');
+            return $this->displayError('authenticationFailed').$this->login();
         }
     }
 

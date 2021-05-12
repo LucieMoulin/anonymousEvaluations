@@ -22,7 +22,8 @@ class EvaluationController extends Controller {
         "creationSubmitted",
         "details",
         "changeState",
-        "list"
+        "list",
+        "return"
     );
 
     /**
@@ -31,7 +32,7 @@ class EvaluationController extends Controller {
     function __construct (){
         //Ajout des erreurs personnalisées de ce contrôleur
         $this->errors["unknownAction"] = "Action inconnue pour le contrôleur des évaluations.";
-        $this->errors['insertionError'] = 'Erreur lors de l\'insertion de l\'évaluation.';
+        $this->errors['insertionError'] = 'Erreur lors de l\'insertion.';
         $this->errors['uploadError'] = 'Erreur lors de l\'upload du fichier.';
         $this->errors['fileExists'] = 'Un fichier du même nom existe déjà.';
         $this->errors['fileTooLarge'] = 'Le fichier sélectionné est trop gros. Taille MAX : 50 Mb';
@@ -123,8 +124,7 @@ class EvaluationController extends Controller {
             if(isset($participant['useLogin']) && $participant['useLogin'] == $login) {
                 return true;
             }
-        }
-    
+        }    
         return false;
     }
 
@@ -260,7 +260,7 @@ class EvaluationController extends Controller {
                 }
                 ob_start();
                 include('./view/successTemplate.php');
-                return ob_get_clean().$this->create();//TODO rediriger vers détails éval
+                return ob_get_clean().$this->details($id);
             } catch (\Throwable $th) {
                 return $this->displayError('insertionError');
             }
@@ -300,9 +300,10 @@ class EvaluationController extends Controller {
                 //Vérification des droits de modification d'état
                 $displayState = $this->isAllowed('EDIT_STATE_ALL') || ($this->isAllowed('EDIT_STATE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
                 $displayEditButton = $this->isAllowed('EDIT_EVAL_ALL') || ($this->isAllowed('EDIT_EVAL_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
-                $displayId = $this->isAllowed('RETURN') && isset($evaluation['anonymousId']['id']) && $evaluation['anonymousId']['id'] != null;
-                $displayResult = $this->isAllowed('RETURN') && isset($evaluation['evaGrade']) && $evaluation['evaGrade'] != null;
-                $displayReturn = $this->isAllowed('RETURN');
+                $displayId = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation['anonymousId']['id']) && $evaluation['anonymousId']['id'] != null;
+                $displayResult = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation['evaGrade']) && $evaluation['evaGrade'] != null;
+                $displayReturn = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants);
+                $displayReturnForm = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && $evaluation['fkState'] == STATE_ACTIVE;
 
                 //Affichage de la vue de détails d'une évaluation
                 ob_start();
@@ -426,5 +427,66 @@ class EvaluationController extends Controller {
             return $this->displayError('notAllowed');
         }
 
+    }
+
+    /**
+     * Gestion de la soumission d'un retour d'évaluation
+     *
+     * @param int $id
+     * @return string
+     */
+    protected function return($id){        
+        $participants = EvaluationRepository::getParticipants($id);
+        if($this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants)){
+            $fileName;
+            $filePath = null;
+            if(isset($_FILES['return']) && $_FILES['return']['name'] != NULL){
+
+                $fileType = strtolower(pathinfo($_FILES['return']['name'],PATHINFO_EXTENSION));
+                $fileName = EvaluationRepository::getParticipant($_SESSION['connectedUser'], $id)[0]['useAnonymousId'].'.'.$fileType;
+                $filePath = getcwd().UPLOAD_DIR.'/'.$id.'/'.$fileName;
+                if(!is_dir(getcwd().UPLOAD_DIR.'/'.$id)){
+                    mkdir(getcwd().UPLOAD_DIR.'/'.$id);
+                }
+                //TODO upload dans un fichier protégé
+
+                //Vérification que le fichier n'existe pas déjà
+                if (file_exists($filePath)) {
+                    //TODO remplacer si existe
+                    return $this->displayError('fileExists').$this->create();
+                }
+
+                //Vérification de la taille du fichier
+                if ($_FILES['return']['size'] > 50000000) {
+                    return $this->displayError('fileTooLarge').$this->create();
+                }
+
+                //Vérification du format du fichier
+                if(false) {//TODO effectuer liste des extensions à accepter (fichier config)
+                    return $this->displayError('fileFormatUnaccepted').$this->create();
+                }
+
+                //Sauvegarde et upload
+                try {
+                    $username = UserRepository::findWithLogin($_SESSION['connectedUser']);
+                    
+                    //Tentative d'upload du fichier
+                    if ($filePath == NULL || move_uploaded_file($_FILES['return']['tmp_name'], $filePath)) {
+                        //Sauvegarde en base de données
+                        EvaluationRepository::return($id, $username[0]['idUser'], $fileName);
+                        $successText = 'Retour ajouté et upload du fichier réussi';
+                    } else {
+                        return $this->displayError('uploadError');
+                    }
+                    ob_start();
+                    include('./view/successTemplate.php');
+                    return ob_get_clean().$this->details($id);
+                } catch (\Throwable $th) {
+                    return $this->displayError('insertionError');
+                }
+            }
+        } else {
+            return $this->displayError('notAllowed');
+        }
     }
 }

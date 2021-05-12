@@ -9,7 +9,8 @@
  *      $displayEditButton : booléen de définition de l'affichage du bouton de modification
  *      $displayId : booléen de définition de l'affichage de l'identifiant anonyme
  *      $displayResult : booléen de définition de l'affichage du résultat obtenu
- *      $displayReturn : booléen de définition de l'affichage de la fonctionnalité de retour
+ *      $displayReturn : booléen de définition de l'affichage des informations sur le retour
+ *      $displayReturn : booléen de définition de l'affichage du formulaire de retour
  *      $displayState : booléen de définition de l'affichage de l'état
  */
 ?>
@@ -171,10 +172,18 @@
         <a href='<?= ROOT_DIR ?>/uploads/<?= $evaluation['anonymousReturn'] ?>' target="blank"><?= $evaluation['anonymousReturn'] ?></a>
         <?php
             endif;
+        ?>        
+
+        <?php
+            if($displayReturnForm) :
         ?>
-        <div>
-            Formulaire upload/modification retour si ouvert
-        </div>
+        <form action="<?= ROOT_DIR ?>/evaluation/return?id=<?= $evaluation['idEvaluation'] ?>" method="POST" class="form-inline" enctype="multipart/form-data">
+            <input type="file" class="form-control border-0" id="return" name="return">
+            <button type="submit" class="btn" name="submit">Transmettre</button>
+        </form>
+        <?php
+            endif;
+        ?>
     </div>
 </div>
 <?php

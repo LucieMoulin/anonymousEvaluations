@@ -228,6 +228,29 @@ class EvaluationRepository implements Repository {
             return false;
         }
     }
+
+    /**
+     * Ajoute un retour à une évaluation
+     *
+     * @param int $idEvaluation
+     * @param int $idUser
+     * @param string $return
+     * @return bool
+     */
+    public static function return($idEvaluation, $idUser, $return){
+        //Insertion de l'évaluation
+        return executeCommand(
+            "UPDATE
+                t_r_userEvaluation
+                SET useReturn = :useReturn
+                WHERE fkEvaluation = :idEvaluation AND fkUser = :idUser;",
+            array(
+                array("idEvaluation",$idEvaluation),
+                array("idUser",$idUser),
+                array("useReturn",$return)
+            )
+        );
+    }
     
     /**
      * Modifie l'état d'une évaluation
