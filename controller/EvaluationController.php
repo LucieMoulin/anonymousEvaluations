@@ -129,14 +129,15 @@ class EvaluationController extends Controller {
      * @param int $idUser
      * @param int $idState
      * @param Array $name
+     * @param int $counter
      * @return string
      */
-    private static function getOwnEvaluationsListWithState($idUser, $idState, $name){
+    private static function getOwnEvaluationsListWithState($idUser, $idState, $name, $counter){
         //Récupération des évaluations
         $evaluations = EvaluationRepository::findOwnWithState($idUser, $idState);
         if(count($evaluations) > 0){
             $showOwner = false;
-            $title = 'Liste des évaluations '.$name[1];
+            $title = 'Mes évaluations '.$name[1];
 
             //Affichage de la liste des évaluations            
             ob_start();
@@ -323,7 +324,7 @@ class EvaluationController extends Controller {
                 $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
             }
             $showOwner = true;
-            $title = "Liste de toutes les évaluations";
+            $title = "Toutes les évaluations";
 
             //Affichage de la liste des évaluations            
             ob_start();
@@ -335,10 +336,10 @@ class EvaluationController extends Controller {
                 $idUser = $idUser[0]['idUser'];
 
                 //Récupération et préparation de la vue des évaluations
-                $display = EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_WAITING, array('en attente', 'en attente'));
-                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_ACTIVE, array('activée', 'activées'));
-                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_CLOSED, array('clôturée', 'clôturées'));
-                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_FINISHED, array('terminée', 'terminées'));
+                $display = EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_WAITING, array('en attente', 'en attente'), 4);
+                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_ACTIVE, array('activée', 'activées'), 3);
+                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_CLOSED, array('clôturée', 'clôturées'), 2);
+                $display .= EvaluationController::getOwnEvaluationsListWithState($idUser, STATE_FINISHED, array('terminée', 'terminées'), 1);
                 
                 return $display;
             }

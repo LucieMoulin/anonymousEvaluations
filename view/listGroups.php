@@ -81,20 +81,42 @@
 
     $('#groupList').bind('DOMSubtreeModified', function(){
         $('#groupList_info').each(function() {
-            var text = $(this).text();
-            var text = text.replace('Showing', 'Affichage de');
-            var text = text.replace('filtered', 'filtrées');
-            var text = text.replace('from', 'depuis');
-            var text = text.replace('total entries', 'entrées totales');
-            var text = text.replace('to ', 'à ');
-            var text = text.replace('of', 'sur');
-            var text = text.replace('entries', 'entrées');
-            $(this).text(text);
+            var text = $(this).text();            
+            if(text.indexOf('Showing') != -1){
+                text = text.replace('Showing', 'Affichage de');
+                $(this).text(text);
+            }
+            if(text.indexOf('filtered') != -1){
+                text = text.replace('filtered', 'filtrées');
+                $(this).text(text);
+            }
+            if(text.indexOf('from') != -1){
+                text = text.replace('from', 'depuis');
+                $(this).text(text);
+            }
+            if(text.indexOf('total entries') != -1){
+                text = text.replace('total entries', 'entrées totales');
+                $(this).text(text);
+            }
+            if(text.indexOf('to') != -1){
+                text = text.replace('to ', 'à ');
+                $(this).text(text);
+            }
+            if(text.indexOf('of') != -1){
+                text = text.replace('of', 'sur');
+                $(this).text(text);
+            }
+            if(text.indexOf('entries') != -1){
+                text = text.replace('entries', 'entrées');
+                $(this).text(text);
+            }
         });
         $('.dataTables_empty').each(function() {            
             var text = $(this).html();
-            var text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
-            $(this).html(text);
+            if(text.indexOf('No matching records found') != -1){
+                text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
+                $(this).text(text);
+            }
         })
     });
 </script>

@@ -8,10 +8,15 @@
  *      $evaluations => Tableau contenant les évaluations
  *      $showOwner => Booléen définissant si la vue doit afficher le propriétaire du groupe
  *      $title => Titre de la liste
+ *      $counter => Nombre de listes restantes à initialiser
  */
+if(!isset($counter)){
+    $counter = 1;  
+}
+include_once('./view/listEvals-script.php');
 ?>
 <h2 class="mt-4 text-center"><?= $title ?></h2>
-<table id="evalsList<?= $string = str_replace(' ', '', $title); ?>" class="display table-striped" style="width:100%">
+<table id="evalsList<?= $counter ?>" class="display table-striped" style="width:100%">
     <thead>
         <tr>
             <th>Module</th>
@@ -23,7 +28,7 @@
             <?php
                 endif;
             ?>
-            <th>Actions</th>
+            <th class="no-sort">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -58,51 +63,44 @@
 </table>
 
 <script>
-    $(document).ready(function() {
-        //Ajout des barres de recherche popur chaque colonne
-        $('#evalsList<?= $string = str_replace(' ', '', $title); ?> thead tr').clone(true).appendTo( '#evalsList<?= $string = str_replace(' ', '', $title); ?> thead' );
-        $('#evalsList<?= $string = str_replace(' ', '', $title); ?> thead tr:eq(1) th').each( function (i) {
-            var title = $(this).text();
-            if(title != 'Actions'){
-                $(this).html( '<input type="text" placeholder="Recherche '+title+'" />' );
-    
-                $('input',this).on('keyup change', function () {
-                    if ( table.column(i).search() !== this.value ) {
-                        table.column(i).search(this.value).draw();
-                    }
-                } );
-            } else {
-                $(this).html(' ');
-            }
-        } );
-    
-        var table = $('#evalsList<?= $string = str_replace(' ', '', $title); ?>').DataTable( {
-            orderCellsTop: true,
-            fixedHeader: true,
-            dom: 'rti',
-            "columnDefs": [
-                { "orderable": false, "targets": [3] },
-                { "orderable": true, "targets": [0, 1, 2] }
-            ]
-        } );
-    } );
-
-    $('#evalsList<?= $string = str_replace(' ', '', $title); ?>').bind('DOMSubtreeModified', function(){
-        $('#evalsList<?= $string = str_replace(' ', '', $title); ?>_info').each(function() {
+    $('#evalsList<?= $counter ?>').on('DOMSubtreeModified', function(){
+        $('#evalsList<?= $counter ?>_info').each(function() {
             var text = $(this).text();
-            var text = text.replace('Showing', 'Affichage de');
-            var text = text.replace('filtered', 'filtrées');
-            var text = text.replace('from', 'depuis');
-            var text = text.replace('total entries', 'entrées totales');
-            var text = text.replace('to ', 'à ');
-            var text = text.replace('of', 'sur');
-            var text = text.replace('entries', 'entrées');
-            $(this).text(text);
+            if(text.indexOf('Showing') != -1){
+                text = text.replace('Showing', 'Affichage de');
+                $(this).text(text);
+            }
+            if(text.indexOf('filtered') != -1){
+                text = text.replace('filtered', 'filtrées');
+                $(this).text(text);
+            }
+            if(text.indexOf('from') != -1){
+                text = text.replace('from', 'depuis');
+                $(this).text(text);
+            }
+            if(text.indexOf('total entries') != -1){
+                text = text.replace('total entries', 'entrées totales');
+                $(this).text(text);
+            }
+            if(text.indexOf('to') != -1){
+                text = text.replace('to ', 'à ');
+                $(this).text(text);
+            }
+            if(text.indexOf('of') != -1){
+                text = text.replace('of', 'sur');
+                $(this).text(text);
+            }
+            if(text.indexOf('entries') != -1){
+                text = text.replace('entries', 'entrées');
+                $(this).text(text);
+            }
         });
         $('.dataTables_empty').each(function() {            
             var text = $(this).html();
-            var text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
-            $(this).html(text);
+            if(text.indexOf('No matching records found') != -1){
+                text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
+                $(this).text(text);
+            }
         })
     });
 </script>
