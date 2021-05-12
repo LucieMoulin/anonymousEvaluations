@@ -344,7 +344,50 @@ class EvaluationController extends Controller {
                 return $display;
             }
         } else if ($this->isAllowed('SEE_EVAL')) {
-            
+            $idUser = UserRepository::findWithLogin($_SESSION['connectedUser']);
+            if(isset($idUser[0]['idUser'])){
+                $display = '';
+
+                //Récupération des évaluations actives
+                $evaluations = EvaluationRepository::findParticipatingWithState($idUser[0]['idUser'], STATE_ACTIVE);
+                if(count($evaluations) > 0){
+                    $showOwner = true;
+                    foreach ($evaluations as $key => $evaluation) {
+                        $owner = EvaluationRepository::getOwner($evaluation['idEvaluation']);
+                        $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
+                    }
+                    $title = 'Évaluations ouvertes';
+                    $counter = 2;
+
+                    //Affichage de la liste des évaluations ouvertes
+                    ob_start();
+                    include('./view/listEvals.php');
+                    $display .= ob_get_clean();
+                } else {
+                    $display .= '<h2 class="mt-4 text-center">Aucune évaluation ouverte</h2>';
+                }
+
+                //Récupération des évaluations terminées
+                $evaluations = EvaluationRepository::findParticipatingWithState($idUser[0]['idUser'], STATE_FINISHED);
+                if(count($evaluations) > 0){
+                    $showOwner = true;
+                    foreach ($evaluations as $key => $evaluation) {
+                        $owner = EvaluationRepository::getOwner($evaluation['idEvaluation']);
+                        $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
+                    }
+                    $title = 'Évaluations terminées';
+                    $counter = 1;
+
+                    //Affichage de la liste des évaluations ouvertes
+                    ob_start();
+                    include('./view/listEvals.php');
+                    $display .= ob_get_clean();
+                } else {
+                    $display .= '<h2 class="mt-4 text-center">Aucune évaluation terminée</h2>';
+                }
+
+                return $display;
+            }
         } else {
             return $this->displayError('notAllowed');
         }

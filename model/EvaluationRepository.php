@@ -74,6 +74,25 @@ class EvaluationRepository implements Repository {
     }
 
     /**
+     * Récupère toutes les évaluations auxquelles une personne participe avec un état
+     *
+     * @param int $idUser id de l'utilisateur-trice
+     * @param int $idState id de l'état
+     * @return Array
+     */
+    public static function findParticipatingWithState($idUser, $idState) {
+        return executeQuery(
+            "SELECT
+                idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions
+                FROM t_evaluation
+                    JOIN t_r_userEvaluation ON idEvaluation = fkEvaluation
+                WHERE t_r_userEvaluation.fkUser = :idUser AND fkState = :idState
+                ORDER BY evaDate DESC;",
+            array(array("idUser", $idUser),array("idState", $idState))
+        );
+    }
+
+    /**
      * Récupère une évaluation par son id
      *
      * @param int $id
