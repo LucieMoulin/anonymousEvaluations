@@ -106,7 +106,7 @@ class EvaluationRepository implements Repository {
                     JOIN t_state ON idState = fkState
                     JOIN t_group ON idGroup = fkGroup
                 WHERE idEvaluation = :idEvaluation
-                ORDER BY evaDate DESC;",
+                LIMIT 1;",
             array(array("idEvaluation", $id))
         );
     }

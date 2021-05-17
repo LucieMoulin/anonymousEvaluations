@@ -345,7 +345,7 @@ class EvaluationController extends Controller {
                 $displayId = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation['anonymousId']['id']) && $evaluation['anonymousId']['id'] != null;
                 $displayResult = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation['evaGrade']) && $evaluation['evaGrade'] != null;
                 $displayReturn = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants);
-                $displayReturnForm = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && $evaluation['fkState'] == STATE_ACTIVE;
+                $displayReturnForm = $this->isAllowed('RETURN') && $evaluation['fkState'] == STATE_ACTIVE && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && $evaluation['fkState'] == STATE_ACTIVE;
 
                 //Affichage de la vue de détails d'une évaluation
                 ob_start();
@@ -477,9 +477,11 @@ class EvaluationController extends Controller {
      * @param int $id
      * @return string
      */
-    protected function return($id){        
+    protected function return($id){
+        //Récupération de l'évaluation et des participants
+        $evaluation = EvaluationRepository::findOne($id);
         $participants = EvaluationRepository::getParticipants($id);
-        if($this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants)){
+        if(isset($evaluation[0]['fkState']) && $evaluation[0]['fkState'] == STATE_ACTIVE && $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants)){
             $fileName;
             $filePath = null;
             if(isset($_FILES['return']) && $_FILES['return']['name'] != NULL){
@@ -490,13 +492,8 @@ class EvaluationController extends Controller {
                 if(!is_dir(getcwd().UPLOAD_DIR.'/'.$id)){
                     mkdir(getcwd().UPLOAD_DIR.'/'.$id);
                 }
-                //TODO upload dans un fichier protégé
 
-                //Vérification que le fichier n'existe pas déjà
-                if (file_exists($filePath)) {
-                    //TODO remplacer si existe
-                    return $this->displayError('fileExists').$this->details($id);
-                }
+                //TODO upload dans un fichier protégé
 
                 //Vérification de la taille du fichier
                 if ($_FILES['return']['size'] > 50000000) {
