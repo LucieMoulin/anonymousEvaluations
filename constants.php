@@ -30,6 +30,6 @@ defined('ROOT_DIR') || define('ROOT_DIR', '/anonymousEvaluations');
 defined('UPLOAD_DIR') || define('UPLOAD_DIR', '\\uploads\\');
 
 //Fichier de configuration des identifiants anonymes
-defined('ANONYMOUS_CONFIG') || define('ANONYMOUS_CONFIG', './anonymous-config.json');
+defined('CONFIG') || define('CONFIG', './config.json');
 
 ?>

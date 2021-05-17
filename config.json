@@ -144,5 +144,45 @@
             "secondarySymbol":"Ω",
             "active":true
         }
+    ],
+    "instructionsAcceptedFormats":[
+        {
+            "format": "zip",
+            "active": true
+        },
+        {
+            "format": "7z",
+            "active": true
+        },
+        {
+            "format": "pdf",
+            "active": true
+        },
+        {
+            "format": "docx",
+            "active": true
+        }
+    ],
+    "returnAcceptedFormats":[
+        {
+            "format": "zip",
+            "active": true
+        },
+        {
+            "format": "7z",
+            "active": true
+        },
+        {
+            "format": "pdf",
+            "active": false
+        },
+        {
+            "format": "docx",
+            "active": false
+        },
+        {
+            "format": "txt",
+            "active": true
+        }
     ]
 }

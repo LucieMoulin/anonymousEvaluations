@@ -223,7 +223,7 @@ class EvaluationRepository implements Repository {
                     );
                 }
             }
-            return $result;
+            return $array['idEvaluation'];
         } else {
             return false;
         }

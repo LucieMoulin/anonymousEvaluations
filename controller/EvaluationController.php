@@ -27,16 +27,58 @@ class EvaluationController extends Controller {
     );
 
     /**
+     * Liste des formats de fichiers de consigne acceptés
+     *
+     * @var Array
+     */
+    private $instructionFormatsList;
+
+    /**
+     * Liste des formats de fichiers de retours acceptés
+     *
+     * @var Array
+     */
+    private $returnFormatsList;
+
+    /**
      * Constructeur
      */
     function __construct (){
+        //Récupération de la configuration
+        $config = json_decode(file_get_contents(CONFIG), true);
+
+        $instructionFormats = "";
+        $this->instructionFormatsList = array();
+        $returnFormats = "";        
+        $this->returnFormatsList = array();
+
+        if(isset($config['instructionsAcceptedFormats']) && isset($config['returnAcceptedFormats'])){
+            foreach ($config['instructionsAcceptedFormats'] as $format) {
+                if($format['active']){
+                    $this->instructionFormatsList[] = $format['format'];
+                    $instructionFormats .= $format['format'].', ';
+                }
+            }
+    
+            foreach ($config['returnAcceptedFormats'] as $format) {
+                if($format['active']){
+                    $this->returnFormatsList[] = $format['format'];
+                    $returnFormats .= $format['format'].', ';
+                }
+            }
+
+            $instructionFormats = trim($instructionFormats, ', ');
+            $returnFormats = trim($returnFormats, ', ');
+        }
+
         //Ajout des erreurs personnalisées de ce contrôleur
         $this->errors["unknownAction"] = "Action inconnue pour le contrôleur des évaluations.";
         $this->errors['insertionError'] = 'Erreur lors de l\'insertion.';
         $this->errors['uploadError'] = 'Erreur lors de l\'upload du fichier.';
         $this->errors['fileExists'] = 'Un fichier du même nom existe déjà.';
         $this->errors['fileTooLarge'] = 'Le fichier sélectionné est trop gros. Taille MAX : 50 Mb';
-        $this->errors['fileFormatUnaccepted'] = 'Le fichier sélectionné n\'est pas dans les formats acceptés : ';//TODO ajouter liste formats acceptés
+        $this->errors['instructionsFormat'] = 'Le fichier sélectionné n\'est pas dans les formats acceptés pour le document de consigne : '.$instructionFormats;
+        $this->errors['returnFormat'] = 'Le fichier sélectionné n\'est pas dans les formats acceptés pour le fichier de retour : '.$returnFormats;
         $this->errors['emptyFields'] = 'Merci de remplir tous les champs';
         $this->errors['invalidGroup'] = 'Le numéro du groupe est invalide';
         $this->errors['invalidEvaluation'] = 'Cette évaluation est invalide';
@@ -51,7 +93,7 @@ class EvaluationController extends Controller {
      */
     private static function generateAnonymousIds($amount) {
         //Récupération des identifiants
-        $config = json_decode(file_get_contents(ANONYMOUS_CONFIG));
+        $config = json_decode(file_get_contents(CONFIG));
 
         if(isset($config->anonymousIds)){            
             $availableIndexes = array();
@@ -97,8 +139,8 @@ class EvaluationController extends Controller {
      * @param int $id
      * @return Array
      */
-    private static function getAnonymousIdDetails($id){        
-        $config = json_decode(file_get_contents(ANONYMOUS_CONFIG), true);
+    private static function getAnonymousIdDetails($id){
+        $config = json_decode(file_get_contents(CONFIG), true);
         $index = -1;
         foreach ($config['anonymousIds'] as $key => $anonymousId) {
             if ($anonymousId['id'] == $id) {
@@ -213,8 +255,8 @@ class EvaluationController extends Controller {
                 }
 
                 //Vérification du format du fichier
-                if(false) {//TODO effectuer liste des extensions à accepter
-                    return $this->displayError('fileFormatUnaccepted').$this->create();
+                if(!in_array($fileType, $this->instructionFormatsList)) {
+                    return $this->displayError('instructionsFormat').$this->create();
                 }
             }
 
@@ -253,7 +295,7 @@ class EvaluationController extends Controller {
                     }
 
                     //Sauvegarde en base de données
-                    EvaluationRepository::insertEditOne($evaluation);
+                    $id = EvaluationRepository::insertEditOne($evaluation);
                     $successText = 'Évaluation ajoutée et upload du fichier réussi';
                 } else {
                     return $this->displayError('uploadError');
@@ -453,17 +495,17 @@ class EvaluationController extends Controller {
                 //Vérification que le fichier n'existe pas déjà
                 if (file_exists($filePath)) {
                     //TODO remplacer si existe
-                    return $this->displayError('fileExists').$this->create();
+                    return $this->displayError('fileExists').$this->details($id);
                 }
 
                 //Vérification de la taille du fichier
                 if ($_FILES['return']['size'] > 50000000) {
-                    return $this->displayError('fileTooLarge').$this->create();
+                    return $this->displayError('fileTooLarge').$this->details($id);
                 }
 
                 //Vérification du format du fichier
-                if(false) {//TODO effectuer liste des extensions à accepter (fichier config)
-                    return $this->displayError('fileFormatUnaccepted').$this->create();
+                if(!in_array($fileType, $this->returnFormatsList)) {
+                    return $this->displayError('returnFormat').$this->details($id);
                 }
 
                 //Sauvegarde et upload
