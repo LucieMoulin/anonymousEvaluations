@@ -12,6 +12,7 @@
  *      $displayReturn : booléen de définition de l'affichage des informations sur le retour
  *      $displayReturnForm : booléen de définition de l'affichage du formulaire de retour
  *      $displayState : booléen de définition de l'affichage de l'état
+ *      $displayConfirm : booléen de définition de l'affichage de la confirmation de changement d'état pour la fermeture d'une éval
  *      $displayReturns : booléen de définition de l'affichage des retours des élèves
  *      $returns : si $displayReturns est true, retours à afficher
  *      $displayDownloadAllButton : si $displayReturns est true, définit si le bouton de téléchargement de tous les retous doit être affiché
@@ -214,9 +215,8 @@
         <?php
                     break;
                 case STATE_ACTIVE:
-                    //TODO confirmation clôture si pas tous les élèves ont rendu
         ?>
-        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/changeState?id=<?= $evaluation['idEvaluation'] ?>&state=<?= STATE_CLOSED ?>" role="button">Clôturer</a>
+        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/changeState?id=<?= $evaluation['idEvaluation'] ?>&state=<?= STATE_CLOSED ?>" role="button" <?php if($displayConfirm): ?>onClick="return confirm('Tous les élèves n\'ont pas rendu, voulez-vous vraiment clôturer cette évalaution ?');"<?php endif; ?>>Clôturer</a>
 
         <?php
                     break;
@@ -318,7 +318,7 @@
         </tbody>
     </table>
     <div class="col-12 text-center">
-        <button type="submit" class="btn btn-light" name="submit">Enregistrer les notes et commentaires</button>
+        <button type="submit" class="btn btn-light mb-4" name="submit">Enregistrer les notes et commentaires</button>
     </div>
 </form>
 

@@ -77,6 +77,7 @@ class EvaluationController extends Controller {
         $this->errors["unknownAction"] = "Action inconnue pour le contrôleur des évaluations.";
         $this->errors['insertionError'] = 'Erreur lors de l\'insertion.';
         $this->errors['uploadError'] = 'Erreur lors de l\'upload du fichier.';
+        $this->errors['noFile'] = 'Aucun fichier sélectionné.';
         $this->errors['fileExists'] = 'Un fichier du même nom existe déjà.';
         $this->errors['fileTooLarge'] = 'Le fichier sélectionné est trop gros. Taille MAX : 50 Mb';
         $this->errors['instructionsFormat'] = 'Le fichier sélectionné n\'est pas dans les formats acceptés pour le document de consigne : '.$instructionFormats;
@@ -391,7 +392,7 @@ class EvaluationController extends Controller {
                     $evaluation['evaComment'] = $participant[0]['useComment'];
                 }
 
-                //Vérification des droits de modification d'état
+                //Vérification des droits d'affichage des fonctionnalités de la page, configuration de la page
                 $displayState = $this->isAllowed('EDIT_STATE_ALL') || ($this->isAllowed('EDIT_STATE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
                 $displayEditButton = $this->isAllowed('EDIT_EVAL_ALL') || ($this->isAllowed('EDIT_EVAL_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']);
                 $displayId = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation['anonymousId']['id']) && $evaluation['anonymousId']['id'] != null;
@@ -400,19 +401,17 @@ class EvaluationController extends Controller {
                 $displayReturnForm = $this->isAllowed('RETURN') && $evaluation['fkState'] == STATE_ACTIVE && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && $evaluation['fkState'] == STATE_ACTIVE;
                 $displayReturns = ($evaluation['fkState'] == STATE_CLOSED || $evaluation['fkState'] == STATE_FINISHED) && ($this->isAllowed('SEE_RETURN_ALL') || ($this->isAllowed('SEE_RETURN_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']));
 
-                if($displayReturns){
-                    $returns = EvaluationRepository::getReturns($id);
-                    $counter = 0;
-
-                    foreach($returns as $key => $return){
-                        $returns[$key]['anonymousId'] = EvaluationController::getAnonymousIdDetails($return['useAnonymousId']);
-                        if($return['useReturn'] != NULL){
-                            $counter++;
-                        }
+                //Récupère les retours et compte le nombre d'élèves ayant rendu
+                $returns = EvaluationRepository::getReturns($id);
+                $counter = 0;
+                foreach($returns as $key => $return){
+                    $returns[$key]['anonymousId'] = EvaluationController::getAnonymousIdDetails($return['useAnonymousId']);
+                    if($return['useReturn'] != NULL){
+                        $counter++;
                     }
-
-                    $displayDownloadAllButton = $counter > 1;
                 }
+                $displayConfirm = $displayState && $counter < count($returns);
+                $displayDownloadAllButton = $displayReturns && $counter > 1;
 
                 //Affichage de la vue de détails d'une évaluation
                 ob_start();
@@ -588,8 +587,10 @@ class EvaluationController extends Controller {
                     include('./view/successTemplate.php');
                     return ob_get_clean().$this->details($id);
                 } catch (\Throwable $th) {
-                    return $this->displayError('insertionError');
+                    return $this->displayError('insertionError').$this->details($id);
                 }
+            } else {
+                return $this->displayError('noFile').$this->details($id);
             }
         } else {
             return $this->displayError('notAllowed');
