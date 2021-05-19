@@ -46,7 +46,9 @@
         $parameters = array();
         foreach($elements[2] as $element){
             $array = explode('=', $element);
-            $parameters[$array[0]] = $array[1];
+            if(isset($array[1])){
+                $parameters[$array[0]] = $array[1];
+            }
         }
         $elements["parameters"] = $parameters;
         unset($elements[2]);

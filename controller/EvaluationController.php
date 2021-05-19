@@ -344,12 +344,12 @@ class EvaluationController extends Controller {
                     }
 
                     //Sauvegarde en base de données
-                    $id = EvaluationRepository::insertEditOne($evaluation);
                     if($id == -1){
                         $successText = 'Évaluation ajoutée';
                     } else {                        
                         $successText = 'Évaluation modifiée';
                     }
+                    $id = EvaluationRepository::insertEditOne($evaluation);
                 } else {
                     return $this->displayError('uploadError');
                 }
@@ -369,9 +369,10 @@ class EvaluationController extends Controller {
      * Affichage des détails d'une évaluation
      *
      * @param int $id
+     * @param bool $showNames
      * @return string
      */
-    protected function details($id){
+    protected function details($id, $showNames = false){
         //Récupération du propriétaire de l'évaluation et des participants, vérification des droits
         $owner = EvaluationRepository::getOwner($id);
         $participants = EvaluationRepository::getParticipants($id);
@@ -401,6 +402,8 @@ class EvaluationController extends Controller {
                 $displayReturn = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants);
                 $displayReturnForm = $this->isAllowed('RETURN') && $evaluation['fkState'] == STATE_ACTIVE && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && $evaluation['fkState'] == STATE_ACTIVE;
                 $displayReturns = ($evaluation['fkState'] == STATE_CLOSED || $evaluation['fkState'] == STATE_FINISHED) && ($this->isAllowed('SEE_RETURN_ALL') || ($this->isAllowed('SEE_RETURN_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']));
+                $displayGradesForm = $evaluation['fkState'] == STATE_CLOSED && ($this->isAllowed('ADD_GRADE_ALL') || ($this->isAllowed('ADD_GRADE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']));
+                $showNames = $showNames && $evaluation['fkState'] == STATE_FINISHED && ($this->isAllowed('SEE_NAMES_ALL') || ($this->isAllowed('SEE_NAMES_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']));
 
                 //Récupère les retours et compte le nombre d'élèves ayant rendu
                 $returns = EvaluationRepository::getReturns($id);
@@ -413,6 +416,7 @@ class EvaluationController extends Controller {
                 }
                 $displayConfirm = $displayState && $counter < count($returns);
                 $displayDownloadAllButton = $displayReturns && $counter > 1;
+                $toggleActive = $displayReturns && $evaluation['fkState'] == STATE_FINISHED;
 
                 //Affichage de la vue de détails d'une évaluation
                 ob_start();

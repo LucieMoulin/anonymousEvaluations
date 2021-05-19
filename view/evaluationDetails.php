@@ -14,8 +14,11 @@
  *      $displayState : booléen de définition de l'affichage de l'état
  *      $displayConfirm : booléen de définition de l'affichage de la confirmation de changement d'état pour la fermeture d'une éval
  *      $displayReturns : booléen de définition de l'affichage des retours des élèves
+ *      $displayGradesForm : booléen de définition de l'affichage du formulaire de modification/ajout de notes
  *      $returns : si $displayReturns est true, retours à afficher
  *      $displayDownloadAllButton : si $displayReturns est true, définit si le bouton de téléchargement de tous les retous doit être affiché
+ *      $toggleActive : définit si le bouton d'affichage des noms est actif
+ *      $showNames : définit si les noms doivent être affichés
  */
 ?>
 <div class="row">
@@ -160,6 +163,7 @@
 <?php
     if($displayReturn) :
 ?>
+<!-- Retour d'évaluation de l'élève connecté-e -->
 <div class="row pt-1">
     <div class="col-6 text-right">
         Retour
@@ -196,6 +200,7 @@
 <?php
     if($displayState) :
 ?>
+<!-- État de l'évaluation -->
 <div class="row mt-3">
     <div class="col-6 text-right">
         État
@@ -204,7 +209,6 @@
         <?= $evaluation['staName'] ?></br>
     </div>
 </div>
-
 <div class="row pt-1">
     <div class="col-12 text-center">
         <?php
@@ -229,7 +233,7 @@
                     break;
                 case STATE_FINISHED:                    
         ?>
-        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/changeState?id=<?= $evaluation['idEvaluation'] ?>&state=<?= STATE_ACTIVE ?>" role="button">Ré-activer</a>
+        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/changeState?id=<?= $evaluation['idEvaluation'] ?>&state=<?= STATE_CLOSED ?>" role="button">Ré-activer</a>
         <?php
                     break;
             }
@@ -240,10 +244,10 @@
     endif;
 ?>
 
-
 <?php
     if($displayReturns):
 ?>
+<!-- Retours d'évalaution de tous les élève -->
 <div class="col-12 text-center mt-4">
     <h3>Retours des élèves :</h3>
     <?php
@@ -255,145 +259,149 @@
     ?>
 </div>
 
-<form action="<?= ROOT_DIR ?>/evaluation/saveGrades?id=<?= $evaluation['idEvaluation'] ?>" method="POST">
-    <table id="returnsList" class="display table-striped" style="width:100%">
-        <thead>
-            <tr>
-                <th>Élève</th>
-                <th class="no-sort">Retour d'évaluation</th>
-                <th class="no-sort">Note</th>
-                <th class="no-sort">Commentaire</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-                foreach ($returns as $return) :
+<div id="returnsDest" class="mt-2 mb-2">
+    <div id="returnsSource">
+        <?php 
+            if($displayGradesForm) :
+        ?>
+        <form action="<?= ROOT_DIR ?>/evaluation/saveGrades?id=<?= $evaluation['idEvaluation'] ?>" method="POST">
+        <?php 
+            endif;
+        ?>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Élève</th>
+                        <th class="no-sort">Retour d'évaluation</th>
+                        <th class="no-sort">Note</th>
+                        <th class="no-sort">Commentaire</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                        foreach ($returns as $return) :
+                    ?>
+                        <tr>
+                            <td>
+                                <?php
+                                    if(isset($return['anonymousId']['secondarySymbol'])) {
+                                        echo $return['anonymousId']['secondarySymbol'].' ';
+                                    }
+                                    if(isset($return['anonymousId']['symbol'])) {
+                                        echo $return['anonymousId']['symbol'].' ';
+                                    }
+                                ?>
+                                <?= $return['anonymousId']['id'] ?><?php
+                                    if($showNames):
+                                ?> - <?= $return['useFirstName'] ?> <?= $return['useLastName'] ?>
+                                <?php endif; ?>
+                                
+                            </td>
+                            <td>
+                                <?php
+                                    if(!isset($return['useReturn']) || $return['useReturn'] == null) :
+                                ?>
+                                Aucun retour uploadé
+                                <?php
+                                    else :
+                                ?>
+                                <a href='<?= ROOT_DIR ?>/uploads/<?= $id ?>/<?= $return['useReturn'] ?>' target="blank"><?= $return['useReturn'] ?></a>
+                                <?php
+                                    endif;
+                                ?> 
+                            </td>
+                            <td>
+                                <?php 
+                                    if($displayGradesForm) :
+                                ?>
+                                <input type="text" class="form-control" id="grades[<?= $return['anonymousId']['id']; ?>][grade]" name="grades[<?= $return['anonymousId']['id']; ?>][grade]" 
+                                <?php
+                                    //Affichage de la note                            
+                                    if ($return['useGrade'] != NULL) {                                   
+                                        echo("value=\"".$return['useGrade']."\"");
+                                    }
+                                ?> style="max-width:50px">
+                                <?php 
+                                    else :
+                                ?>
+                                <?= $return['useGrade'] ?>
+                                <?php 
+                                    endif;
+                                ?>
+                            </td>
+                            <td>
+                                <?php 
+                                    if($displayGradesForm) :
+                                ?>
+                                <input type="text" class="form-control" id="grades[<?= $return['anonymousId']['id']; ?>][comment]" name="grades[<?= $return['anonymousId']['id']; ?>][comment]" 
+                                <?php
+                                    //Affichage de la note                            
+                                    if ($return['useComment'] != NULL) {                                   
+                                        echo("value=\"".$return['useComment']."\"");
+                                    }
+                                ?>>
+                                <?php 
+                                    else :
+                                ?>
+                                <?= $return['useComment'] ?>
+                                <?php 
+                                    endif;
+                                ?>
+                            </td>
+                        </tr>
+                    <?php
+                        endforeach;
+                    ?>
+                </tbody>
+            </table>
+            <?php 
+                if($displayGradesForm) :
             ?>
-                <tr>
-                    <td>
-                        <?php
-                            if(isset($return['anonymousId']['secondarySymbol'])) {
-                                echo $return['anonymousId']['secondarySymbol'].' ';
-                            }
-                            if(isset($return['anonymousId']['symbol'])) {
-                                echo $return['anonymousId']['symbol'].' ';
-                            }
-                        ?>
-                        <?= $return['anonymousId']['id'] ?>
-                    </td>
-                    <td>
-                        <?php
-                            if(!isset($return['useReturn']) || $return['useReturn'] == null) :
-                        ?>
-                        Aucun retour uploadé
-                        <?php
-                            else :
-                        ?>
-                        <a href='<?= ROOT_DIR ?>/uploads/<?= $id ?>/<?= $return['useReturn'] ?>' target="blank"><?= $return['useReturn'] ?></a>
-                        <?php
-                            endif;
-                        ?> 
-                    </td>
-                    <td>
-                        <input type="text" class="form-control" id="grades[<?= $return['anonymousId']['id']; ?>][grade]" name="grades[<?= $return['anonymousId']['id']; ?>][grade]" 
-                        <?php
-                            //Affichage de la note                            
-                            if ($return['useGrade'] != NULL) {                                   
-                                echo("value=\"".$return['useGrade']."\"");
-                            }
-                        ?> style="max-width:50px">
-                    </td>
-                    <td>
-                        <input type="text" class="form-control" id="grades[<?= $return['anonymousId']['id']; ?>][comment]" name="grades[<?= $return['anonymousId']['id']; ?>][comment]" 
-                        <?php
-                            //Affichage de la note                            
-                            if ($return['useComment'] != NULL) {                                   
-                                echo("value=\"".$return['useComment']."\"");
-                            }
-                        ?>>                        
-                    </td>
-                </tr>
-            <?php
-                endforeach;
-            ?>
-        </tbody>
-    </table>
-    <div class="col-12 text-center">
-        <button type="submit" class="btn btn-light mb-4" name="submit">Enregistrer les notes et commentaires</button>
+            <div class="col-12 text-center mb-4">
+                <button type="submit" class="btn btn-light" name="submit">Enregistrer les notes et commentaires</button>
+            </div>
+        </form>
+        <?php 
+            endif;
+        ?>
     </div>
-</form>
+</div>
 
+<div class="row">
+    <div class="col-6 text-right mt-1">
+        <h4>Noms des élèves</h4>
+    </div>
+    <div class="col-6 mb-4">
+        <div class="form-check pl-0" id="toggle-wrapper">
+            <input id="toggle" class="form-check-input" type="checkbox" data-toggle="toggle" data-onstyle="outline-secondary" data-on="Affichés" data-off="Cachés" <?= $showNames ? 'checked' : '' ?>>
+        </div>
+    </div>
+</div>
+
+<!-- Script de gestion de la table de données -->
 <script>
     $(document).ready(function() {
-        //Ajout des barres de recherche popur chaque colonne
-        $('#returnsList thead tr').clone(true).appendTo( '#returnsList thead' );
-        $('#returnsList thead tr:eq(1) th').each( function (i) {
-            var title = $(this).text();
-            if(title == 'Élève'){
-                $(this).html( '<input type="text" placeholder="Recherche '+title+'" />' );
-        
-                $('input',this).on('keyup change', function () {
-                    if ( table.column(i).search() !== this.value ) {
-                        table.column(i).search(this.value).draw();
-                    }
-                } );
-            } else {
-                $(this).html(' ');
-            }
-        } );
-    
-        var table = $('#returnsList').DataTable( {
-            orderCellsTop: true,
-            fixedHeader: true,
-            dom: 'rti',
-            "columnDefs": [
-                { "orderable": false, "targets": "no-sort" }
-            ]
-        } );
-    } );
+        if(<?= !$toggleActive ? 'true' : 'false' ?>){
+            $('#toggle').bootstrapToggle('disable');
+        }
 
-    $('#returnsList').bind('DOMSubtreeModified', function(){
-        $('#returnsList_info').each(function() {
-            var text = $(this).text();            
-            if(text.indexOf('Showing') != -1){
-                text = text.replace('Showing', 'Affichage de');
-                $(this).text(text);
-            }
-            if(text.indexOf('filtered') != -1){
-                text = text.replace('filtered', 'filtrées');
-                $(this).text(text);
-            }
-            if(text.indexOf('from') != -1){
-                text = text.replace('from', 'depuis');
-                $(this).text(text);
-            }
-            if(text.indexOf('total entries') != -1){
-                text = text.replace('total entries', 'entrées totales');
-                $(this).text(text);
-            }
-            if(text.indexOf('to') != -1){
-                text = text.replace('to ', 'à ');
-                $(this).text(text);
-            }
-            if(text.indexOf('of') != -1){
-                text = text.replace('of', 'sur');
-                $(this).text(text);
-            }
-            if(text.indexOf('entries') != -1){
-                text = text.replace('entries', 'entrées');
-                $(this).text(text);
+        $('#toggle').change(function() {
+            if($(this).prop('checked') && <?= $toggleActive ? 'true' : 'false' ?>){
+                //Charge le tableau avec les noms des élèves
+                $('#returnsDest').load('<?= ROOT_DIR ?>/evaluation/details?id=<?= $id ?>&showNames=true #returnsSource');
+            } else {
+                //Charge le tableau sans les noms des élèves
+                $('#returnsDest').load('<?= ROOT_DIR ?>/evaluation/details?id=<?= $id ?> #returnsSource');
             }
         });
-        $('.dataTables_empty').each(function() {            
-            var text = $(this).html();
-            if(text.indexOf('No matching records found') != -1){
-                text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
-                $(this).text(text);
+        
+        $('#toggle-wrapper').click(function() {
+            if($('#toggle').attr('disabled') == 'disabled'){
+                alert('Il est nécessaire de terminer l\'évaluation avant de pouvoir afficher les noms');
             }
-        })
+        });
     });
 </script>
 <?php
     endif;
 ?>
-
