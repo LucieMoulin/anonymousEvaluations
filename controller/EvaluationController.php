@@ -25,7 +25,8 @@ class EvaluationController extends Controller {
         "changeState",
         "list",
         "return",
-        "getAllReturns"
+        "getAllReturns",
+        "saveGrades"
     );
 
     /**
@@ -74,7 +75,7 @@ class EvaluationController extends Controller {
         }
 
         //Ajout des erreurs personnalisées de ce contrôleur
-        $this->errors["unknownAction"] = "Action inconnue pour le contrôleur des évaluations.";
+        $this->errors['unknownAction'] = "Action inconnue pour le contrôleur des évaluations.";
         $this->errors['insertionError'] = 'Erreur lors de l\'insertion.';
         $this->errors['uploadError'] = 'Erreur lors de l\'upload du fichier.';
         $this->errors['noFile'] = 'Aucun fichier sélectionné.';
@@ -638,6 +639,35 @@ class EvaluationController extends Controller {
             } else {
                 return $this->displayError('zipError');
             }            
+        } else {
+            return $this->displayError('notAllowed');
+        }
+    }
+
+    /**
+     * Gestion du résultat du formulaire de sauvegarde des notes
+     *
+     * @param int $id
+     * @return string
+     */
+    protected function saveGrades($id){
+        //Vérification des droits
+        $owner = EvaluationRepository::getOwner($id);
+        if($this->isAllowed('ADD_GRADE_ALL') || ($this->isAllowed('ADD_GRADE_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
+
+            if(isset($_POST['grades']) && count($_POST['grades']) > 0){
+                foreach ($_POST['grades'] as $anonymousId => $grade) {
+                    EvaluationRepository::addGrade($id, $anonymousId, $grade['grade'], $grade['comment']);                    
+                }
+            } else {
+                return $this->displayError('insertionError');
+            }
+
+            //Affichage d'un message de succès et de la vue de détails d'une évaluation
+            $successText = "Notes insérées avec succès";
+            ob_start();
+            include('./view/successTemplate.php');
+            return ob_get_clean().$this->details($id);
         } else {
             return $this->displayError('notAllowed');
         }

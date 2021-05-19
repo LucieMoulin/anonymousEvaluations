@@ -318,4 +318,29 @@ class EvaluationRepository implements Repository {
             array(array("idEvaluation", $id))
         );
     }
+
+    /**
+     * Insère une note et un commentaire pour un-e élève pour une évaluation
+     *
+     * @param int $idEvaluation
+     * @param string $anonymousId
+     * @param float $grade
+     * @param string $comment
+     * @return bool
+     */
+    public static function addGrade($idEvaluation, $anonymousId, $grade, $comment = ''){
+        //Insertion de l'évaluation
+        return executeCommand(
+            "UPDATE
+                t_r_userEvaluation
+                SET useGrade = :grade, useComment = :comment
+                WHERE fkEvaluation = :idEvaluation AND useAnonymousId = :anonymousId;",
+            array(
+                array("grade",$grade),
+                array("comment",$comment),
+                array("idEvaluation",$idEvaluation),
+                array("anonymousId",$anonymousId)
+            )
+        );
+    }
 }

@@ -27,6 +27,7 @@
 <?php 
     if($displayEditButton) :        
 ?>
+<!-- Bouton de modification de l'évaluation -->
 <div class="row">
     <div class="col-12 text-center pt-1">
         <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/edit?id=<?= $evaluation['idEvaluation'] ?>" role="button">Modifier</a>
@@ -36,6 +37,7 @@
     endif;
 ?>
 
+<!-- Informations sur l'évaluation -->
 <div class="row mt-4 pt-1">
     <div class="col-6 text-right">
         Numéro du module
@@ -44,7 +46,6 @@
         <?= $evaluation['evaModuleNumber'] ?>
     </div>
 </div>
-
 <div class="row pt-1">
     <div class="col-6 text-right">
         Groupe
@@ -53,7 +54,6 @@
         <?= $evaluation['groName'] ?>
     </div>
 </div>
-
 <div class="row pt-1">
     <div class="col-6 text-right">
         Enseignant-e
@@ -62,7 +62,6 @@
         <?= $evaluation['owner'] ?>
     </div>
 </div>
-
 <div class="row pt-1">
     <div class="col-6 text-right">
         Date
@@ -71,7 +70,6 @@
         <?= date('d.m.Y', strtotime($evaluation['evaDate'])) ?>
     </div>
 </div>
-
 <div class="row pt-1">
     <div class="col-6 text-right">
         Durée
@@ -81,6 +79,7 @@
     </div>
 </div>
 
+<!-- Document de consigne -->
 <div class="row pt-1">
     <div class="col-6 text-right">
         Document de consigne
@@ -103,6 +102,7 @@
 <?php
     if($displayId) :
 ?>
+<!-- Identifiant anonyme de l'élève connecté-e -->
 <div class="row mt-4 pt-1">
     <div class="col-6 text-right">
         Identifiant anonyme
@@ -126,6 +126,7 @@
 <?php
     if($displayResult) :
 ?>
+<!-- Résultat obtenu par l'élève connecté-e -->
 <div class="row pt-1">
     <div class="col-6 text-right">
         Note obtenue
@@ -294,7 +295,7 @@
                         ?> 
                     </td>
                     <td>
-                        <input type="text" class="form-control" id="grades[<?= $return['idUser']; ?>][grade]" name="grades[<?= $return['idUser']; ?>][grade]" 
+                        <input type="text" class="form-control" id="grades[<?= $return['anonymousId']['id']; ?>][grade]" name="grades[<?= $return['anonymousId']['id']; ?>][grade]" 
                         <?php
                             //Affichage de la note                            
                             if ($return['useGrade'] != NULL) {                                   
@@ -303,7 +304,7 @@
                         ?> style="max-width:50px">
                     </td>
                     <td>
-                        <input type="text" class="form-control" id="grades[<?= $return['idUser']; ?>][comment]" name="grades[<?= $return['idUser']; ?>][comment]" 
+                        <input type="text" class="form-control" id="grades[<?= $return['anonymousId']['id']; ?>][comment]" name="grades[<?= $return['anonymousId']['id']; ?>][comment]" 
                         <?php
                             //Affichage de la note                            
                             if ($return['useComment'] != NULL) {                                   

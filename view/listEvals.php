@@ -40,7 +40,7 @@ include_once('./view/listEvals-script.php');
                     <?= $evaluation['evaModuleNumber'] ?>
                 </td>
                 <td>
-                    <?= date('d.m.Y', strtotime($evaluation['evaDate'])) ?>
+                    <span style="display:none;"><?= strtotime($evaluation['evaDate']) ?></span><?= date('d.m.Y', strtotime($evaluation['evaDate'])) ?>
                 </td>
                 <?php
                     if($showOwner && isset($evaluation['owner'])) :
