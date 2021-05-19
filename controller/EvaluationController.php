@@ -19,6 +19,7 @@ class EvaluationController extends Controller {
      */
     public $actions = array(
         "create",
+        "edit",
         "creationSubmitted",
         "details",
         "changeState",
@@ -219,10 +220,40 @@ class EvaluationController extends Controller {
     protected function create(){
         if($this->isAllowed('CREATE_EVAL')){
             $groups = GroupRepository::findOwned($_SESSION['connectedUser']);
+            $isEdition = false;
 
             ob_start();
             include('./view/createEvaluation.php');
             return ob_get_clean();
+        } else {
+            return $this->displayError('notAllowed');
+        }
+    }
+
+    /**
+     * Affichage du formulaire de modification d'une évaluation
+     *
+     * @return string
+     */
+    protected function edit($id){
+        //Récupération du propriétaire de l'évaluation et des participants, vérification des droits
+        $owner = EvaluationRepository::getOwner($id);
+        $participants = EvaluationRepository::getParticipants($id);
+        if($this->isAllowed('EDIT_EVAL_ALL') ||
+            ($this->isAllowed('EDIT_EVAL_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
+            $groups = GroupRepository::findOwned($_SESSION['connectedUser']);
+            
+            $evaluation = EvaluationRepository::findOne($id);
+            if(isset($evaluation[0])){
+                $evaluation = $evaluation[0];
+                $isEdition = true;
+
+                ob_start();
+                include('./view/createEvaluation.php');
+                return ob_get_clean();
+            } else {
+                return $this->displayError('invalidEvaluation');
+            }
         } else {
             return $this->displayError('notAllowed');
         }
@@ -234,9 +265,19 @@ class EvaluationController extends Controller {
      * @return string
      */
     protected function creationSubmitted(){
-        //TODO vérification des droits pour la modification
-        //TODO implémentation de la modification
-        if($this->isAllowed('CREATE_EVAL')){
+        $id = -1;
+        if(isset($_POST['submit']) && is_numeric($_POST['submit'])){
+            //Récupération du propriétaire de l'évaluation et des participants
+            $id = $_POST['submit'];
+            $owner = EvaluationRepository::getOwner($id);
+            $participants = EvaluationRepository::getParticipants($id);
+        }
+
+        //Vérification des droits
+        if(($this->isAllowed('CREATE_EVAL') && $id == -1) ||
+            ($this->isAllowed('EDIT_EVAL_ALL') && $id != -1) ||
+            ($this->isAllowed('EDIT_EVAL_OWN') && $id != -1 && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])){
+
             $fileName;
             $filePath = null;
             if(isset($_FILES['instructions']) && $_FILES['instructions']['name'] != NULL){
@@ -246,57 +287,65 @@ class EvaluationController extends Controller {
 
                 //Vérification que le fichier n'existe pas déjà
                 if (file_exists($filePath)) {
-                    return $this->displayError('fileExists').$this->create();
+                    return $id == -1 ? $this->displayError('fileExists').$this->create() : $this->displayError('fileExists').$this->edit($id);
                 }
 
                 //Vérification de la taille du fichier
                 if ($_FILES['instructions']['size'] > 50000000) {
-                    return $this->displayError('fileTooLarge').$this->create();
+                    return $id == -1 ? $this->displayError('fileTooLarge').$this->create() : $this->displayError('fileTooLarge').$this->edit($id);
                 }
 
                 //Vérification du format du fichier
                 if(!in_array($fileType, $this->instructionFormatsList)) {
-                    return $this->displayError('instructionsFormat').$this->create();
+                    return $id == -1 ? $this->displayError('instructionsFormat').$this->create() : $this->displayError('instructionsFormat').$this->edit($id);
                 }
             }
 
             //Vérification du formulaire
-            if(!isset($_POST['moduleNumber']) || !isset($_POST['group']) || !isset($_POST['date']) || !isset($_POST['length']) || $_POST['moduleNumber'] == NULL || $_POST['group'] == NULL || $_POST['date'] == NULL || $_POST['length'] == NULL) {
-                return $this->displayError('emptyFields').$this->create();
+            if(!isset($_POST['moduleNumber']) || ($id == -1 && !isset($_POST['group'])) || !isset($_POST['date']) || !isset($_POST['length']) || $_POST['moduleNumber'] == NULL || ($id == -1 && $_POST['group'] == NULL) || $_POST['date'] == NULL || $_POST['length'] == NULL) {
+                return $id == -1 ? $this->displayError('emptyFields').$this->create() : $this->displayError('emptyFields').$this->edit($id);
             }
 
             //Vérification du groupe
-            if(!in_array($_POST['group'],GroupRepository::findAllIds())){
+            if($id == -1 && !in_array($_POST['group'],GroupRepository::findAllIds())){
                 return $this->displayError('invalidGroup').$this->create();
             }
 
             //Sauvegarde et upload
             try {
                 $username = UserRepository::findWithLogin($_SESSION['connectedUser']);
+                if(!(isset($_POST['removeFile']) && $_POST['removeFile'] == 'on')){
+                    $currentFile = $id != -1 ? EvaluationRepository::findOne($id)[0]['evaInstructions'] : NULL;
+                }
                 $evaluation = array(
-                    'idEvaluation' => NULL,//TODO récupération id lors de la modification
+                    'idEvaluation' => $id == -1 ? null : $id,
                     'evaModuleNumber' => $_POST['moduleNumber'],
                     'evaDate' => $_POST['date'],
                     'evaLength' => $_POST['length'],
-                    'evaInstructions' => isset($fileName) ? $fileName : NULL,
+                    'evaInstructions' => isset($fileName) ? $fileName : (isset($currentFile) && $currentFile != NULL ? $currentFile : NULL),
                     'fkUser' => $username[0]['idUser'],
-                    'fkGroup' => $_POST['group']
+                    'fkGroup' => $id == -1 ? $_POST['group'] : NULL 
                 );
 
                 //Tentative d'upload du fichier
                 if ($filePath == NULL || move_uploaded_file($_FILES['instructions']['tmp_name'], $filePath)) {
-                    //Génération des identifiants anonymes 
-                    //TODO si modification, ne pas générer ces identifiants
-                    $groupMembersIds = GroupRepository::getMembers($_POST['group']);             
-                    $anonymousIds = EvaluationController::generateAnonymousIds(count($groupMembersIds));
-                    $evaluation['anonymousIds'] = array();
-                    for($i = 0; $i < count($groupMembersIds); $i++) {
-                        $evaluation['anonymousIds'][$groupMembersIds[$i]] = $anonymousIds[$i]->id;
+                    if($id == -1){
+                        //Génération des identifiants anonymes
+                        $groupMembersIds = GroupRepository::getMembers($_POST['group']);             
+                        $anonymousIds = EvaluationController::generateAnonymousIds(count($groupMembersIds));
+                        $evaluation['anonymousIds'] = array();
+                        for($i = 0; $i < count($groupMembersIds); $i++) {
+                            $evaluation['anonymousIds'][$groupMembersIds[$i]] = $anonymousIds[$i]->id;
+                        }
                     }
 
                     //Sauvegarde en base de données
                     $id = EvaluationRepository::insertEditOne($evaluation);
-                    $successText = 'Évaluation ajoutée et upload du fichier réussi';
+                    if($id == -1){
+                        $successText = 'Évaluation ajoutée';
+                    } else {                        
+                        $successText = 'Évaluation modifiée';
+                    }
                 } else {
                     return $this->displayError('uploadError');
                 }
@@ -304,6 +353,7 @@ class EvaluationController extends Controller {
                 include('./view/successTemplate.php');
                 return ob_get_clean().$this->details($id);
             } catch (\Throwable $th) {
+                echo $th;
                 return $this->displayError('insertionError');
             }
         } else {

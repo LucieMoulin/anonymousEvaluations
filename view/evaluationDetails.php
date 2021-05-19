@@ -21,16 +21,14 @@
 </div>
 
 <?php 
-    if($displayEditButton) :
-        echo "Modification pas implémentée";
-        /* 
+    if($displayEditButton) :        
 ?>
 <div class="row">
     <div class="col-12 text-center pt-1">
         <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/edit?id=<?= $evaluation['idEvaluation'] ?>" role="button">Modifier</a>
     </div>
 </div>
-<?php */
+<?php
     endif;
 ?>
 

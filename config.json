@@ -161,6 +161,10 @@
         {
             "format": "docx",
             "active": true
+        },
+        {
+            "format": "txt",
+            "active": true
         }
     ],
     "returnAcceptedFormats":[

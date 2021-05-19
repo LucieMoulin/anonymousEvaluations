@@ -174,6 +174,20 @@ class EvaluationRepository implements Repository {
     public static function insertEditOne($array){
         if(!isset($array['idEvaluation'])){
             $array['idEvaluation'] = null;
+        } else {
+            //Modification d'une évaluation
+            if(!isset($array['fkGroup'])){
+                $result = executeQuery(
+                    "SELECT fkGroup FROM t_evaluation WHERE idEvaluation = :idEvaluation;",
+                    array(array("idEvaluation",$array['idEvaluation']))
+                );
+
+                if(isset($result[0]['fkGroup'])){
+                    $array['fkGroup'] = $result[0]['fkGroup'];
+                }
+            }
+
+            
         }
 
         if(!isset($array['evaInstructions'])){
@@ -184,14 +198,14 @@ class EvaluationRepository implements Repository {
             $array['fkState'] = STATE_WAITING;
         }
 
-        if(isset($array['evaModuleNumber']) && isset($array['evaDate']) &&isset($array['evaLength']) &&isset($array['fkUser']) &&isset($array['fkGroup'])){
+        if(isset($array['evaModuleNumber']) && isset($array['evaDate']) && isset($array['evaLength']) && isset($array['fkUser']) && isset($array['fkGroup'])){
             //Insertion de l'évaluation
             $result = executeCommand(
                 "INSERT
                     INTO t_evaluation (idEvaluation, evaModuleNumber, evaDate, evaLength, evaInstructions, fkUser, fkGroup, fkState)
                     VALUE (:idEvaluation, :evaModuleNumber, :evaDate, :evaLength, :evaInstructions, :fkUser, :fkGroup, :fkState)
                 ON DUPLICATE KEY UPDATE
-                    evaModuleNumber =:evaModuleNumber, evaDate = :evaDate, evaLength = :evaLength, evaInstructions = :evaInstructions, fkGroup = :fkGroup, fkState = :fkState;",
+                    evaModuleNumber =:evaModuleNumber, evaDate = :evaDate, evaLength = :evaLength, evaInstructions = :evaInstructions;",
                 array(
                     array("idEvaluation",$array['idEvaluation']),
                     array("evaModuleNumber",$array['evaModuleNumber']),
