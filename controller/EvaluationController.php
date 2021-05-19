@@ -24,7 +24,8 @@ class EvaluationController extends Controller {
         "details",
         "changeState",
         "list",
-        "return"
+        "return",
+        "getAllReturns"
     );
 
     /**
@@ -84,6 +85,7 @@ class EvaluationController extends Controller {
         $this->errors['invalidGroup'] = 'Le numéro du groupe est invalide';
         $this->errors['invalidEvaluation'] = 'Cette évaluation est invalide';
         $this->errors['invalidState'] = 'L\'état demandé n\'existe pas';
+        $this->errors['zipError'] = 'Erreur lors de la création de l\'archive.';
     }
 
     /**
@@ -396,6 +398,21 @@ class EvaluationController extends Controller {
                 $displayResult = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation['evaGrade']) && $evaluation['evaGrade'] != null;
                 $displayReturn = $this->isAllowed('RETURN') && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants);
                 $displayReturnForm = $this->isAllowed('RETURN') && $evaluation['fkState'] == STATE_ACTIVE && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && $evaluation['fkState'] == STATE_ACTIVE;
+                $displayReturns = ($evaluation['fkState'] == STATE_CLOSED || $evaluation['fkState'] == STATE_FINISHED) && ($this->isAllowed('SEE_RETURN_ALL') || ($this->isAllowed('SEE_RETURN_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']));
+
+                if($displayReturns){
+                    $returns = EvaluationRepository::getReturns($id);
+                    $counter = 0;
+
+                    foreach($returns as $key => $return){
+                        $returns[$key]['anonymousId'] = EvaluationController::getAnonymousIdDetails($return['useAnonymousId']);
+                        if($return['useReturn'] != NULL){
+                            $counter++;
+                        }
+                    }
+
+                    $displayDownloadAllButton = $counter > 1;
+                }
 
                 //Affichage de la vue de détails d'une évaluation
                 ob_start();
@@ -574,6 +591,52 @@ class EvaluationController extends Controller {
                     return $this->displayError('insertionError');
                 }
             }
+        } else {
+            return $this->displayError('notAllowed');
+        }
+    }
+
+    /**
+     * Lance le téléchargement de tous les retours d'évaluation d'une évaluation
+     *
+     * @param int $id
+     * @return string
+     */
+    protected function getAllReturns($id){
+        //Récupération des données de l'évaluation et vérification des droits
+        $evaluation = EvaluationRepository::findOne($id)[0];
+        $owner = EvaluationRepository::getOwner($id);
+        if(($evaluation['fkState'] == STATE_CLOSED || $evaluation['fkState'] == STATE_FINISHED) &&
+            ($this->isAllowed('SEE_RETURN_ALL') ||
+                ($this->isAllowed('SEE_RETURN_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']))){
+            
+            $returns = EvaluationRepository::getReturns($id);
+
+            $returnsZip = new ZipArchive();
+            $fileName = getcwd().UPLOAD_DIR.'/'.$id.'/all.zip';
+
+            if(file_exists($fileName)){
+                $result = $returnsZip->open($fileName, ZipArchive::OVERWRITE);
+            } else {
+                $result = $returnsZip->open($fileName, ZipArchive::CREATE);
+            }
+            
+            if($result === true){
+                foreach ($returns as $return) {
+                    if(isset($return['useReturn']) && $return['useReturn'] != null){
+                        $returnsZip->addFile(getcwd().UPLOAD_DIR.'/'.$id.'/'.$return['useReturn'], $return['useReturn']);
+                    }
+                }
+                $returnsZip->close();
+
+                ob_start();
+                header("Content-Type: application/octet-stream");
+                header("Content-Disposition: attachment; filename=evaluation$id.zip");
+                readfile($fileName);
+                return ob_get_clean();
+            } else {
+                return $this->displayError('zipError');
+            }            
         } else {
             return $this->displayError('notAllowed');
         }

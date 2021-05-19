@@ -300,4 +300,22 @@ class EvaluationRepository implements Repository {
                 FROM t_state;"
         );
     }
+
+    /**
+     * Récupère tous les retours d'une évaluation
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function getReturns($id){
+        return executeQuery(
+            "SELECT
+                idUser, useLogin, useFirstName, useLastName, useAnonymousId, useReturn, useGrade, useComment
+                FROM t_r_userEvaluation
+                    JOIN t_user
+                    ON fkUser = idUser
+                WHERE fkEvaluation = :idEvaluation;",
+            array(array("idEvaluation", $id))
+        );
+    }
 }

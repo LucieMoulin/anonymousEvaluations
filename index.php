@@ -54,6 +54,9 @@
 
     //Construction du contrôleur principal
     $mainController = new MainController();
+
+    //Si l'action est le téléchargement d'un fichier, ne pas afficher le reste de la page
+    if(!(isset($elements["action"]) && $elements["action"] == 'getAllReturns')):
 ?>
 
 <!DOCTYPE html>
@@ -87,3 +90,8 @@
     </div>
 </body>
 </html>
+<?php
+    else:
+        echo($mainController->executeAction("dispatch", $elements));
+    endif;
+?>

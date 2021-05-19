@@ -10,8 +10,11 @@
  *      $displayId : booléen de définition de l'affichage de l'identifiant anonyme
  *      $displayResult : booléen de définition de l'affichage du résultat obtenu
  *      $displayReturn : booléen de définition de l'affichage des informations sur le retour
- *      $displayReturn : booléen de définition de l'affichage du formulaire de retour
+ *      $displayReturnForm : booléen de définition de l'affichage du formulaire de retour
  *      $displayState : booléen de définition de l'affichage de l'état
+ *      $displayReturns : booléen de définition de l'affichage des retours des élèves
+ *      $returns : si $displayReturns est true, retours à afficher
+ *      $displayDownloadAllButton : si $displayReturns est true, définit si le bouton de téléchargement de tous les retous doit être affiché
  */
 ?>
 <div class="row">
@@ -167,7 +170,7 @@
         <?php
             else :
         ?>
-        <a href='<?= ROOT_DIR ?>/uploads/<?= $evaluation['anonymousReturn'] ?>' target="blank"><?= $evaluation['anonymousReturn'] ?></a>
+        <a href='<?= ROOT_DIR ?>/uploads/<?= $id ?>/<?= $evaluation['anonymousReturn'] ?>' target="blank"><?= $evaluation['anonymousReturn'] ?></a>
         <?php
             endif;
         ?>        
@@ -235,3 +238,161 @@
 <?php
     endif;
 ?>
+
+
+<?php
+    if($displayReturns):
+?>
+<div class="col-12 text-center mt-4">
+    <h3>Retours des élèves :</h3>
+    <?php
+        if($displayDownloadAllButton):
+    ?>
+        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/getAllReturns?id=<?= $evaluation['idEvaluation'] ?>" role="button">Télécharger tous les retours</a>
+    <?php
+        endif;
+    ?>
+</div>
+
+<form action="<?= ROOT_DIR ?>/evaluation/saveGrades?id=<?= $evaluation['idEvaluation'] ?>" method="POST">
+    <table id="returnsList" class="display table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Élève</th>
+                <th class="no-sort">Retour d'évaluation</th>
+                <th class="no-sort">Note</th>
+                <th class="no-sort">Commentaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+                foreach ($returns as $return) :
+            ?>
+                <tr>
+                    <td>
+                        <?php
+                            if(isset($return['anonymousId']['secondarySymbol'])) {
+                                echo $return['anonymousId']['secondarySymbol'].' ';
+                            }
+                            if(isset($return['anonymousId']['symbol'])) {
+                                echo $return['anonymousId']['symbol'].' ';
+                            }
+                        ?>
+                        <?= $return['anonymousId']['id'] ?>
+                    </td>
+                    <td>
+                        <?php
+                            if(!isset($return['useReturn']) || $return['useReturn'] == null) :
+                        ?>
+                        Aucun retour uploadé
+                        <?php
+                            else :
+                        ?>
+                        <a href='<?= ROOT_DIR ?>/uploads/<?= $id ?>/<?= $return['useReturn'] ?>' target="blank"><?= $return['useReturn'] ?></a>
+                        <?php
+                            endif;
+                        ?> 
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" id="grades[<?= $return['idUser']; ?>][grade]" name="grades[<?= $return['idUser']; ?>][grade]" 
+                        <?php
+                            //Affichage de la note                            
+                            if ($return['useGrade'] != NULL) {                                   
+                                echo("value=\"".$return['useGrade']."\"");
+                            }
+                        ?> style="max-width:50px">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" id="grades[<?= $return['idUser']; ?>][comment]" name="grades[<?= $return['idUser']; ?>][comment]" 
+                        <?php
+                            //Affichage de la note                            
+                            if ($return['useComment'] != NULL) {                                   
+                                echo("value=\"".$return['useComment']."\"");
+                            }
+                        ?>>                        
+                    </td>
+                </tr>
+            <?php
+                endforeach;
+            ?>
+        </tbody>
+    </table>
+    <div class="col-12 text-center">
+        <button type="submit" class="btn btn-light" name="submit">Enregistrer les notes et commentaires</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function() {
+        //Ajout des barres de recherche popur chaque colonne
+        $('#returnsList thead tr').clone(true).appendTo( '#returnsList thead' );
+        $('#returnsList thead tr:eq(1) th').each( function (i) {
+            var title = $(this).text();
+            if(title == 'Élève'){
+                $(this).html( '<input type="text" placeholder="Recherche '+title+'" />' );
+        
+                $('input',this).on('keyup change', function () {
+                    if ( table.column(i).search() !== this.value ) {
+                        table.column(i).search(this.value).draw();
+                    }
+                } );
+            } else {
+                $(this).html(' ');
+            }
+        } );
+    
+        var table = $('#returnsList').DataTable( {
+            orderCellsTop: true,
+            fixedHeader: true,
+            dom: 'rti',
+            "columnDefs": [
+                { "orderable": false, "targets": "no-sort" }
+            ]
+        } );
+    } );
+
+    $('#returnsList').bind('DOMSubtreeModified', function(){
+        $('#returnsList_info').each(function() {
+            var text = $(this).text();            
+            if(text.indexOf('Showing') != -1){
+                text = text.replace('Showing', 'Affichage de');
+                $(this).text(text);
+            }
+            if(text.indexOf('filtered') != -1){
+                text = text.replace('filtered', 'filtrées');
+                $(this).text(text);
+            }
+            if(text.indexOf('from') != -1){
+                text = text.replace('from', 'depuis');
+                $(this).text(text);
+            }
+            if(text.indexOf('total entries') != -1){
+                text = text.replace('total entries', 'entrées totales');
+                $(this).text(text);
+            }
+            if(text.indexOf('to') != -1){
+                text = text.replace('to ', 'à ');
+                $(this).text(text);
+            }
+            if(text.indexOf('of') != -1){
+                text = text.replace('of', 'sur');
+                $(this).text(text);
+            }
+            if(text.indexOf('entries') != -1){
+                text = text.replace('entries', 'entrées');
+                $(this).text(text);
+            }
+        });
+        $('.dataTables_empty').each(function() {            
+            var text = $(this).html();
+            if(text.indexOf('No matching records found') != -1){
+                text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
+                $(this).text(text);
+            }
+        })
+    });
+</script>
+<?php
+    endif;
+?>
+
