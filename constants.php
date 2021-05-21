@@ -32,4 +32,8 @@ defined('UPLOAD_DIR') || define('UPLOAD_DIR', '\\uploads\\');
 //Fichier de configuration des identifiants anonymes
 defined('CONFIG') || define('CONFIG', './config.json');
 
+//Connexion LDAP
+defined('IP') ||  define('IP', '10.228.146.36');
+defined('DOMAIN') ||  define('DOMAIN', '@etmlnet.local');
+defined('ROOT') ||  define('ROOT', 'DC=etmlnet, DC=local');
 ?>

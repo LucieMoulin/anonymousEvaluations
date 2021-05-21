@@ -19,7 +19,7 @@
             <label for="lastName" class="pt-2">Nom</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="lastName" name="lastName" value="<?= $name['lastName'] ?>">
+            <input type="text" class="form-control w-50" id="lastName" name="lastName" value="<?= $name['lastName'] ?>" required>
         </div>
     </div>
     <div class="row form-group">
@@ -27,7 +27,7 @@
             <label for="firstName" class="pt-2">Prénom</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="firstName" name="firstName" value="<?= $name['firstName'] ?>">
+            <input type="text" class="form-control w-50" id="firstName" name="firstName" value="<?= $name['firstName'] ?>" required>
         </div>
     </div>
     <div class="row form-group">
@@ -41,7 +41,7 @@
             ?>
             <div class="row ml-1">
                 <div class="form-check col-3">                
-                    <input class="form-check-input" type="radio" name="role" id="role<?= $role['idRole'] ?>" value="<?= $role['idRole'] ?>">
+                    <input class="form-check-input" type="radio" name="role" id="role<?= $role['idRole'] ?>" value="<?= $role['idRole'] ?>" required>
                     <label class="form-check-label" for="role<?= $role['idRole'] ?>">
                         <?= $role['rolName'] ?>
                     </label>

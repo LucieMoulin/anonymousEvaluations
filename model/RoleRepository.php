@@ -49,7 +49,8 @@ class RoleRepository implements Repository {
             "SELECT
                 idUser, useLogin, useLastName, useFirstName, fkRole
                 FROM t_user
-                WHERE fkRole = :idRole;",
+                WHERE fkRole = :idRole
+                ORDER BY useLastName, useFirstName;",
             array(array("idRole", $id))
         );
     }

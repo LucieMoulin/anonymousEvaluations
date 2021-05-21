@@ -29,7 +29,7 @@ class MainController extends Controller {
     /**
      * Construction du contrôleur et lancement de l'action
      *
-     * @param Controller $controller
+     * @param string $controller
      * @param string $action
      * @param Array $parameters
      * @return string retourne le html d'affichage du résultat de l'action

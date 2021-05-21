@@ -88,6 +88,7 @@ class EvaluationController extends Controller {
         $this->errors['invalidEvaluation'] = 'Cette évaluation est invalide';
         $this->errors['invalidState'] = 'L\'état demandé n\'existe pas';
         $this->errors['zipError'] = 'Erreur lors de la création de l\'archive.';
+        $this->errors['generationError'] = 'Erreur lors de la génération des identifiants anonymes.';
     }
 
     /**
@@ -217,6 +218,36 @@ class EvaluationController extends Controller {
     }
 
     /**
+     * Récupère la liste d'affichage des évaluations avec un état spécifique auxquelles une personne participe
+     *
+     * @param int $idUser
+     * @param int $idState
+     * @param Array $title
+     * @param int $counter
+     * @return string
+     */
+    private static function getParticipatingEvaluationsListWithState($idUser, $idState, $title, $counter){
+        //Récupération des évaluations terminées
+        $evaluations = EvaluationRepository::findParticipatingWithState($idUser, $idState);
+        if(count($evaluations) > 0){
+            $showOwner = true;
+            foreach ($evaluations as $key => $evaluation) {
+                $owner = EvaluationRepository::getOwner($evaluation['idEvaluation']);
+                $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
+            }
+            $title = 'Évaluations '.$title[1];
+
+
+            //Affichage de la liste des évaluations ouvertes
+            ob_start();
+            include('./view/listEvals.php');
+            return ob_get_clean();
+        } else {
+            return '<h2 class="mt-4 text-center">Aucune évaluation '.$title[0].'</h2>';
+        }
+    }
+
+    /**
      * Affichage du formulaire de création d'évaluation
      *
      * @return string
@@ -337,10 +368,15 @@ class EvaluationController extends Controller {
                         //Génération des identifiants anonymes
                         $groupMembersIds = GroupRepository::getMembers($_POST['group']);             
                         $anonymousIds = EvaluationController::generateAnonymousIds(count($groupMembersIds));
-                        $evaluation['anonymousIds'] = array();
-                        for($i = 0; $i < count($groupMembersIds); $i++) {
-                            $evaluation['anonymousIds'][$groupMembersIds[$i]] = $anonymousIds[$i]->id;
+                        if($anonymousIds){
+                            $evaluation['anonymousIds'] = array();
+                            for($i = 0; $i < count($groupMembersIds); $i++) {
+                                $evaluation['anonymousIds'][$groupMembersIds[$i]] = $anonymousIds[$i]->id;
+                            }
+                        } else {
+                            return $this->displayError('generationError');
                         }
+                        
                     }
 
                     //Sauvegarde en base de données
@@ -373,15 +409,16 @@ class EvaluationController extends Controller {
      * @return string
      */
     protected function details($id, $showNames = false){
+        //Récupération de l'évaluation
+        $evaluation = EvaluationRepository::findOne($id);
+
         //Récupération du propriétaire de l'évaluation et des participants, vérification des droits
         $owner = EvaluationRepository::getOwner($id);
         $participants = EvaluationRepository::getParticipants($id);
         if($this->isAllowed('SEE_EVAL_ALL') ||
             ($this->isAllowed('SEE_EVAL_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser']) ||
-            ($this->isAllowed('SEE_EVAL') && isset($_SESSION['connectedUser']) && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants))) {
+            ($this->isAllowed('SEE_EVAL') && isset($_SESSION['connectedUser']) && EvaluationController::in_participants_array($_SESSION['connectedUser'], $participants) && isset($evaluation[0]['fkState']) && ($evaluation[0]['fkState'] == STATE_ACTIVE || $evaluation[0]['fkState'] == STATE_FINISHED))) {
 
-            //Récupération de l'évaluation
-            $evaluation = EvaluationRepository::findOne($id);
             if(isset($evaluation[0])){
                 $evaluation = $evaluation[0];
                 $evaluation['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
@@ -497,42 +534,8 @@ class EvaluationController extends Controller {
                 $display = '';
 
                 //Récupération des évaluations actives
-                $evaluations = EvaluationRepository::findParticipatingWithState($idUser[0]['idUser'], STATE_ACTIVE);
-                if(count($evaluations) > 0){
-                    $showOwner = true;
-                    foreach ($evaluations as $key => $evaluation) {
-                        $owner = EvaluationRepository::getOwner($evaluation['idEvaluation']);
-                        $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
-                    }
-                    $title = 'Évaluations ouvertes';
-                    $counter = 2;
-
-                    //Affichage de la liste des évaluations ouvertes
-                    ob_start();
-                    include('./view/listEvals.php');
-                    $display .= ob_get_clean();
-                } else {
-                    $display .= '<h2 class="mt-4 text-center">Aucune évaluation ouverte</h2>';
-                }
-
-                //Récupération des évaluations terminées
-                $evaluations = EvaluationRepository::findParticipatingWithState($idUser[0]['idUser'], STATE_FINISHED);
-                if(count($evaluations) > 0){
-                    $showOwner = true;
-                    foreach ($evaluations as $key => $evaluation) {
-                        $owner = EvaluationRepository::getOwner($evaluation['idEvaluation']);
-                        $evaluations[$key]['owner'] = $owner[0]['useFirstName'].' '.$owner[0]['useLastName'];
-                    }
-                    $title = 'Évaluations terminées';
-                    $counter = 1;
-
-                    //Affichage de la liste des évaluations ouvertes
-                    ob_start();
-                    include('./view/listEvals.php');
-                    $display .= ob_get_clean();
-                } else {
-                    $display .= '<h2 class="mt-4 text-center">Aucune évaluation terminée</h2>';
-                }
+                $display = EvaluationController::getParticipatingEvaluationsListWithState($idUser[0]['idUser'], STATE_ACTIVE, array('ouverte', 'ouvertes'), 2);
+                $display .= EvaluationController::getParticipatingEvaluationsListWithState($idUser[0]['idUser'], STATE_FINISHED, array('terminée', 'terminées'), 1);
 
                 return $display;
             }

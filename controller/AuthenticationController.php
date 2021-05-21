@@ -44,18 +44,13 @@ class AuthenticationController extends Controller {
      */
     private function ldapAuth($login, $password)
     {
-        //Infos serveur
-        $ip = '10.228.146.36';
-        $domain = '@etmlnet.local';
-        $root = 'DC=etmlnet, DC=local';
-
         //Si pas d'identifiants donnés, erreur
         if ($login == "" || $password == "") {
             return false;
         }
 
         //Création du lien vers le serveur
-        $link = ldap_connect($ip);
+        $link = ldap_connect(IP);
 
         //Si pas de lien alros serveur pas dispo
         if (!$link) {
@@ -67,7 +62,7 @@ class AuthenticationController extends Controller {
         ldap_set_option($link, LDAP_OPT_REFERRALS, 0);
 
         //Essayer de se connecter avec les identifiants donnés
-        $handle = @ldap_bind($link, $login.$domain, $password);
+        $handle = @ldap_bind($link, $login.DOMAIN, $password);
 
         //Retourner le résultat
         if (!$handle) {
@@ -77,13 +72,13 @@ class AuthenticationController extends Controller {
                 //Récupération du prénom
                 $filter = "(sAMAccountName=" . $login . ")";
                 $attr = array("memberof","givenname");
-                $result = ldap_search($link, $root, $filter, $attr);
+                $result = ldap_search($link, ROOT, $filter, $attr);
                 $entries = ldap_get_entries($link, $result);
                 $name['firstName'] = $entries[0]['givenname'][0];
 
                 //Récupération du nom
                 $attr = array("memberof","sn");
-                $result = ldap_search($link, $root, $filter, $attr);
+                $result = ldap_search($link, ROOT, $filter, $attr);
                 $entries = ldap_get_entries($link, $result);
                 $name['lastName'] = $entries[0]['sn'][0];
                 

@@ -221,7 +221,7 @@
                     break;
                 case STATE_ACTIVE:
         ?>
-        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/changeState?id=<?= $evaluation['idEvaluation'] ?>&state=<?= STATE_CLOSED ?>" role="button" <?php if($displayConfirm): ?>onClick="return confirm('Tous les élèves n\'ont pas rendu, voulez-vous vraiment clôturer cette évalaution ?');"<?php endif; ?>>Clôturer</a>
+        <a class="btn btn-light" href="<?= ROOT_DIR ?>/evaluation/changeState?id=<?= $evaluation['idEvaluation'] ?>&state=<?= STATE_CLOSED ?>" role="button" <?php if($displayConfirm): ?>onClick="return confirm('Tous les élèves n\'ont pas rendu, voulez-vous vraiment clôturer cette évaluation ?');"<?php endif; ?>>Clôturer</a>
 
         <?php
                     break;
@@ -247,7 +247,7 @@
 <?php
     if($displayReturns):
 ?>
-<!-- Retours d'évalaution de tous les élève -->
+<!-- Retours d'évaluation de tous les élève -->
 <div class="col-12 text-center mt-4">
     <h3>Retours des élèves :</h3>
     <?php
