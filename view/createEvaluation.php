@@ -28,7 +28,7 @@
             <label for="moduleNumber" class="pt-2">Numéro du module</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="moduleNumber" name="moduleNumber" value="<?php if($isEdition) { echo $evaluation['evaModuleNumber']; } ?>">
+            <input type="text" class="form-control w-50" id="moduleNumber" name="moduleNumber" value="<?php if($isEdition) { echo htmlspecialchars($evaluation['evaModuleNumber']); } ?>">
         </div>
     </div>
     <?php
@@ -50,7 +50,7 @@
                     //Boucle sur tous les groupes
                     foreach($groups as $group):
                 ?>
-                <option value="<?= $group['idGroup']; ?>"><?= $group['groName']; ?></option>
+                <option value="<?= $group['idGroup']; ?>"><?= htmlspecialchars($group['groName']); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -71,7 +71,7 @@
             <label for="length" class="pt-2">Durée</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="length" name="length" value="<?php if($isEdition) { echo $evaluation['evaLength']; } ?>">
+            <input type="text" class="form-control w-50" id="length" name="length" value="<?php if($isEdition) { echo htmlspecialchars($evaluation['evaLength']); } ?>">
         </div>
     </div>
     <div class="row form-group">

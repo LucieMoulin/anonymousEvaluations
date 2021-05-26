@@ -46,7 +46,7 @@
         Numéro du module
     </div>
     <div class="col-6">
-        <?= $evaluation['evaModuleNumber'] ?>
+        <?= htmlspecialchars($evaluation['evaModuleNumber']) ?>
     </div>
 </div>
 <div class="row pt-1">
@@ -54,7 +54,7 @@
         Groupe
     </div>
     <div class="col-6">
-        <?= $evaluation['groName'] ?>
+        <?= htmlspecialchars($evaluation['groName']) ?>
     </div>
 </div>
 <div class="row pt-1">
@@ -62,7 +62,7 @@
         Enseignant-e
     </div>
     <div class="col-6">
-        <?= $evaluation['owner'] ?>
+        <?= htmlspecialchars($evaluation['owner']) ?>
     </div>
 </div>
 <div class="row pt-1">
@@ -78,7 +78,7 @@
         Durée
     </div>
     <div class="col-6">
-        <?= $evaluation['evaLength'] ?>
+        <?= htmlspecialchars($evaluation['evaLength']) ?>
     </div>
 </div>
 
@@ -135,7 +135,7 @@
         Note obtenue
     </div>
     <div class="col-6">
-        <?= $evaluation['evaGrade'] ?>
+        <?= htmlspecialchars($evaluation['evaGrade']) ?>
     </div>
 </div>
 <div class="row pt-1">
@@ -146,7 +146,7 @@
         <?php
             if(isset($evaluation['evaComment']) && $evaluation['evaComment'] != null) :
         ?>
-        <span class="font-italic"><?= $evaluation['evaComment'] ?></span>
+        <span class="font-italic"><?= htmlspecialchars($evaluation['evaComment']) ?></span>
         <?php
             else :
         ?>
@@ -293,7 +293,7 @@
                                 ?>
                                 <?= $return['anonymousId']['id'] ?><?php
                                     if($showNames):
-                                ?> - <?= $return['useFirstName'] ?> <?= $return['useLastName'] ?>
+                                ?> - <?= htmlspecialchars($return['useFirstName']) ?> <?= htmlspecialchars($return['useLastName']) ?>
                                 <?php endif; ?>
                                 
                             </td>
@@ -318,13 +318,13 @@
                                 <?php
                                     //Affichage de la note                            
                                     if ($return['useGrade'] != NULL) {                                   
-                                        echo("value=\"".$return['useGrade']."\"");
+                                        echo("value=\"".htmlspecialchars($return['useGrade'])."\"");
                                     }
                                 ?> style="max-width:50px">
                                 <?php 
                                     else :
                                 ?>
-                                <?= $return['useGrade'] ?>
+                                <?= htmlspecialchars($return['useGrade']) ?>
                                 <?php 
                                     endif;
                                 ?>
@@ -337,13 +337,13 @@
                                 <?php
                                     //Affichage de la note                            
                                     if ($return['useComment'] != NULL) {                                   
-                                        echo("value=\"".$return['useComment']."\"");
+                                        echo("value=\"".htmlspecialchars($return['useComment'])."\"");
                                     }
                                 ?>>
                                 <?php 
                                     else :
                                 ?>
-                                <?= $return['useComment'] ?>
+                                <?= htmlspecialchars($return['useComment']) ?>
                                 <?php 
                                     endif;
                                 ?>

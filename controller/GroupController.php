@@ -34,6 +34,7 @@ class GroupController extends Controller {
         $this->errors["creationFailed"] = "La création du groupe a échoué.";
         $this->errors["editionFailed"] = "La modification du groupe a échoué.";
         $this->errors["deletionFailed"] = "La suppression du groupe a échoué.";
+        $this->errors["deletionImpossible"] = "Ce groupe a participé à des évaluations, il est impossible de le supprimer.";
     }
 
     /**
@@ -188,18 +189,23 @@ class GroupController extends Controller {
     protected function delete(){
         if(isset($_SESSION['idGroup'])){
 
-            //Récupération du propriétaire du groupe et vérification des droits
+            //Récupération du propriétaire du groupe, des évaluations de ce groupe et vérification des droits
             $owner = GroupRepository::getOwner($_SESSION['idGroup']);
+            $evals = GroupRepository::findEvals($_SESSION['idGroup']);
             if($this->isAllowed('EDIT_GROUP_ALL') || ($this->isAllowed('EDIT_GROUP_OWN') && isset($owner[0]['useLogin']) && isset($_SESSION['connectedUser']) && $owner[0]['useLogin'] == $_SESSION['connectedUser'])) {
                 
-                //TODO vérification que ce groupe n'a pas d'évaluations
-                GroupRepository::deleteOne($_SESSION['idGroup']);
+                //Vérification que ce groupe n'a pas d'évaluations
+                if(count($evals) == 0){                    
+                    GroupRepository::deleteOne($_SESSION['idGroup']);
 
-                //Affichage d'un message de succès et de la liste des groupes
-                $successText = "Groupe supprimé";
-                ob_start();
-                include('./view/successTemplate.php');
-                return ob_get_clean().$this->list();
+                    //Affichage d'un message de succès et de la liste des groupes
+                    $successText = "Groupe supprimé";
+                    ob_start();
+                    include('./view/successTemplate.php');
+                    return ob_get_clean().$this->list();
+                } else {
+                    return $this->displayError('deletionImpossible');
+                }
             } else {
                 return $this->displayError('notAllowed');
             }

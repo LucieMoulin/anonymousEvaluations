@@ -36,10 +36,13 @@ class HomeController extends Controller {
      * @return string
      */
     protected function display(){
-
-        //TODO page d'accueil
-
-        return "<p>Hello World!</p>";
+        if(isset($_SESSION['connectedUser'])){
+            $controller = new MainController();
+            return $controller->dispatch('evaluation', 'list');
+        } else {
+            $controller = new MainController();
+            return $controller->dispatch('auth', 'login');
+        }
     }
 
     /**

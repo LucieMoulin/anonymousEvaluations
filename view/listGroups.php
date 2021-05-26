@@ -31,13 +31,13 @@
             <tr>
                 <td>
                     <a href="<?= ROOT_DIR ?>/group/edit?id=<?= $group['idGroup'] ?>">
-                        <?= $group['groName'] ?>
+                        <?= htmlspecialchars($group['groName']) ?>
                     </a>
                 </td>
                 <?php
                     if($showOwner && isset($group['owner'])) :
                 ?>
-                <td><?= $group['owner'] ?></td>
+                <td><?= htmlspecialchars($group['owner']) ?></td>
                 <?php
                     endif;
                 ?>
@@ -45,7 +45,7 @@
                     <?php
                         foreach ($group['students'] as $student) :
                     ?>
-                    <?= $student['useLastName'] ?> <?= $student['useFirstName'] ?>;
+                    <?= htmlspecialchars($student['useLastName']) ?> <?= htmlspecialchars($student['useFirstName']) ?>;
                     <?php
                         endforeach;
                     ?>
@@ -115,6 +115,10 @@
             var text = $(this).html();
             if(text.indexOf('No matching records found') != -1){
                 text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
+                $(this).text(text);
+            }
+            if(text.indexOf('No data available in table') != -1){
+                text = text.replace('No data available in table', 'Aucune données dans la liste');
                 $(this).text(text);
             }
         })

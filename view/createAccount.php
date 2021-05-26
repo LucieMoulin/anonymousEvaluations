@@ -11,7 +11,7 @@
  */
 ?>
 <h1 class="text-center">Création de compte</h1>
-<p class="text-center">Bonjour <?= $login ?>. Bienvenue sur EvAnon - Évaluations Anonymes.</p>
+<p class="text-center">Bonjour <?= htmlspecialchars($login) ?>. Bienvenue sur EvAnon - Évaluations Anonymes.</p>
 
 <form action="<?= ROOT_DIR ?>/auth/formSubmitted" method="POST" class="mt-5">
     <div class="row form-group">
@@ -19,7 +19,7 @@
             <label for="lastName" class="pt-2">Nom</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="lastName" name="lastName" value="<?= $name['lastName'] ?>" required>
+            <input type="text" class="form-control w-50" id="lastName" name="lastName" value="<?= htmlspecialchars($name['lastName']) ?>" required>
         </div>
     </div>
     <div class="row form-group">
@@ -27,7 +27,7 @@
             <label for="firstName" class="pt-2">Prénom</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="firstName" name="firstName" value="<?= $name['firstName'] ?>" required>
+            <input type="text" class="form-control w-50" id="firstName" name="firstName" value="<?= htmlspecialchars($name['firstName']) ?>" required>
         </div>
     </div>
     <div class="row form-group">
@@ -43,11 +43,11 @@
                 <div class="form-check col-3">                
                     <input class="form-check-input" type="radio" name="role" id="role<?= $role['idRole'] ?>" value="<?= $role['idRole'] ?>" required>
                     <label class="form-check-label" for="role<?= $role['idRole'] ?>">
-                        <?= $role['rolName'] ?>
+                        <?= htmlspecialchars($role['rolName']) ?>
                     </label>
                 </div>
                 <p class="col-9">
-                    <?= $role['rolDescription'] ?>
+                    <?= htmlspecialchars($role['rolDescription']) ?>
                 </p>
             </div>
             <?php

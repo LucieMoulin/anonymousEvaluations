@@ -131,7 +131,7 @@ class EvaluationController extends Controller {
 
                 return $genratedIds;
             } else {
-                //TODO éventuellement gérer le cas ou on demande plus d'identifiants qu'il n'y en a dans la configuration
+                //TODO Amélioration : gérer le cas ou on demande plus d'identifiants qu'il n'y en a dans la configuration
                 return false;
             }
         } else {
@@ -393,7 +393,6 @@ class EvaluationController extends Controller {
                 include('./view/successTemplate.php');
                 return ob_get_clean().$this->details($id);
             } catch (\Throwable $th) {
-                echo $th;
                 return $this->displayError('insertionError');
             }
         } else {
@@ -567,7 +566,7 @@ class EvaluationController extends Controller {
                     mkdir(getcwd().UPLOAD_DIR.'/'.$id);
                 }
 
-                //TODO upload dans un fichier protégé
+                //TODO Amélioration : upload dans un fichier protégé
 
                 //Vérification de la taille du fichier
                 if ($_FILES['return']['size'] > 50000000) {

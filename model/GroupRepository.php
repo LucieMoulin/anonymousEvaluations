@@ -81,6 +81,22 @@ class GroupRepository implements Repository {
     }
 
     /**
+     * Permet de récupérer les identifiants des évaluations auquel ce groupe participe
+     *
+     * @param int $id
+     * @return Array
+     */
+    public static function findEvals($id){
+        return executeQuery(
+            "SELECT
+                idEvaluation
+                FROM t_evaluation 
+                WHERE fkGroup = :idGroup;",
+            array(array("idGroup", $id))
+        );
+    }
+
+    /**
      * Récupère un groupe créés par un utilisateur
      *
      * @param string $login

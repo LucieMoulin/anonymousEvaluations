@@ -37,7 +37,7 @@ include_once('./view/listEvals-script.php');
         ?>
             <tr>
                 <td class="row mr-0 ml-0">
-                    <?= $evaluation['evaModuleNumber'] ?>
+                    <?= htmlspecialchars($evaluation['evaModuleNumber']) ?>
                 </td>
                 <td>
                     <span style="display:none;"><?= strtotime($evaluation['evaDate']) ?></span><?= date('d.m.Y', strtotime($evaluation['evaDate'])) ?>
@@ -45,7 +45,7 @@ include_once('./view/listEvals-script.php');
                 <?php
                     if($showOwner && isset($evaluation['owner'])) :
                 ?>
-                <td><?= $evaluation['owner'] ?></td>
+                <td><?= htmlspecialchars($evaluation['owner']) ?></td>
                 <?php
                     endif;
                 ?>
@@ -99,6 +99,10 @@ include_once('./view/listEvals-script.php');
             var text = $(this).html();
             if(text.indexOf('No matching records found') != -1){
                 text = text.replace('No matching records found', 'Aucune entrée correspondante trouvée');
+                $(this).text(text);
+            }
+            if(text.indexOf('No data available in table') != -1){
+                text = text.replace('No data available in table', 'Aucune données dans la liste');
                 $(this).text(text);
             }
         })

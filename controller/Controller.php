@@ -57,8 +57,6 @@ abstract class Controller {
         if (!isset($_SESSION['idRole']) || !is_numeric($_SESSION['idRole'])) {
             return false;
         }
-    
-        //TODO Vérification que le rôle corresponde au login
         
         $permissions = PermissionRepository::findRolePermissions($_SESSION['idRole']);
 

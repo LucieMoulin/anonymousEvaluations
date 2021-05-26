@@ -10,8 +10,8 @@
  */
 ?>
 <div class="text-center">
-    <h1><?= isset($group['groName']) ? "Modification de ".$group['groName'] : "Création de groupe" ?></h1>
-    <?php if(isset($group['groName'])): ?><a href="<?= ROOT_DIR ?>/group/delete"><button class="btn" onclick="return confirm('Supprimer le groupe <?= $group['groName'] ?> ?')">Supprimer ce groupe</button></a><?php endif; ?>
+    <h1><?= isset($group['groName']) ? "Modification de ".htmlspecialchars($group['groName']) : "Création de groupe" ?></h1>
+    <?php if(isset($group['groName'])): ?><a href="<?= ROOT_DIR ?>/group/delete"><button class="btn" onclick="return confirm('Supprimer le groupe <?= htmlspecialchars($group['groName']) ?> ?')">Supprimer ce groupe</button></a><?php endif; ?>
 </div>
 
 <form action="<?= ROOT_DIR ?>/group/formSubmitted" method="POST" class="mt-5">
@@ -20,7 +20,7 @@
             <label for="name" class="pt-2">Nom du groupe</label>
         </div>
         <div class="col-8">
-            <input type="text" class="form-control w-50" id="name" name="name"<?= isset($group['groName']) ? ' value="'.$group['groName'].'"' : ' ' ?>>
+            <input type="text" class="form-control w-50" id="name" name="name"<?= isset($group['groName']) ? ' value="'.htmlspecialchars($group['groName']).'"' : ' ' ?>>
         </div>
     </div>
     <div class="row form-group">
@@ -39,13 +39,13 @@
                                 echo("checked");
                             }
                         ?>>
-                    <label for="student[<?= $student['idUser']; ?>]"><?= $student['useLastName']." ".$student['useFirstName']; ?></label> 
+                    <label for="student[<?= $student['idUser']; ?>]"><?= htmlspecialchars($student['useLastName'])." ".htmlspecialchars($student['useFirstName']); ?></label> 
                 </div>
                 <?php endforeach; ?>
             </div>
         </div>
     </div>
     <div class="text-center">
-        <button type="submit" class="btn mt-3" name="submit"><?= isset($group['groName']) ? "Sauvegarder les modifications de ".$group['groName'] : "Créer le groupe" ?></button>
+        <button type="submit" class="btn mt-3" name="submit"><?= isset($group['groName']) ? "Sauvegarder les modifications de ".htmlspecialchars($group['groName']) : "Créer le groupe" ?></button>
     </div>
 </form>
