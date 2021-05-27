@@ -4,6 +4,8 @@
      * Autrice : Lucie Moulin
      * Date : 06.05.2021
      * Description : Barre de navigation pour tout le site
+     * Paramètres :
+     *      role : Rôle de la personne connectée, permettant de configurer l'affichage de la barre de navigation
      */
 ?>
 
@@ -18,15 +20,30 @@
             <li class="nav-item">
                 <a class="nav-link" href="<?= ROOT_DIR; ?>">Accueil</a>
             </li>
+            <?php
+                if($role != 0) :
+            ?>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarTestDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Évaluations
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarTestDropdown">
                     <a class="dropdown-item" href="<?= ROOT_DIR; ?>/evaluation/list">Liste des évaluations</a>
+                    <?php
+                        if($role == ROLE_TEACHER || $role == ROLE_ADMIN) :
+                    ?>
                     <a class="dropdown-item" href="<?= ROOT_DIR; ?>/evaluation/create">Créer une évaluation</a>
+                    <?php
+                        endif;
+                    ?>
                 </div>
             </li>
+            <?php
+                endif;
+            ?>
+            <?php
+                if($role == ROLE_TEACHER || $role == ROLE_ADMIN) :
+            ?>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="<?= ROOT_DIR; ?>/group/list" id="navbarTestDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Groupes
@@ -36,6 +53,9 @@
                     <a class="dropdown-item" href="<?= ROOT_DIR; ?>/group/create">Créer un groupe</a>
                 </div>
             </li>
+            <?php
+                endif;
+            ?>
         </ul>
         <ul class="navbar-nav ml-auto">
             <?php if(isset($_SESSION['connectedUser'])) : ?>

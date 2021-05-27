@@ -75,6 +75,7 @@
     <div class="flex-wrapper">
         <?php
             //Barre de navigation
+            $role = isset($_SESSION['idRole']) ? $_SESSION['idRole'] : 0;
             include("./nav.php");
         ?>
 

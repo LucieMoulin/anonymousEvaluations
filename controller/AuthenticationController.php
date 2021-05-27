@@ -109,10 +109,10 @@ class AuthenticationController extends Controller {
     protected function logout(){
         $main = new MainController();
         session_destroy();
-        $successText = 'Déconnexion réussie';
+        $successText = 'Déconnexion réussie, vous serez redirigé-e dans 2 secondes';
         ob_start();
         include('./view/successTemplate.php');
-        return ob_get_clean().$main->dispatch();
+        return ob_get_clean().$main->dispatch().'<script>setTimeout(function(){ window.location.assign(String(window.location.origin) + "'.ROOT_DIR.'"); }, 2000);</script>';
     }
 
     /**
@@ -133,10 +133,10 @@ class AuthenticationController extends Controller {
                     $_SESSION['lastName'] = $user[0]['useLastName'];
                     $_SESSION['firstName'] = $user[0]['useFirstName'];
                     $_SESSION['idRole'] = $user[0]['fkRole'];
-                    $successText = 'Connexion réussie';
+                    $successText = 'Connexion réussie, vous serez redirigé-e dans 2 secondes';
                     ob_start();
                     include('./view/successTemplate.php');
-                    return ob_get_clean().$main->dispatch();
+                    return ob_get_clean().$main->dispatch().'<script>setTimeout(function(){ window.location.assign(String(window.location.origin) + "'.ROOT_DIR.'"); }, 2000);</script>';
                 } else {
                     $_SESSION['login'] = $login;
                     $successText = 'Connexion réussie';
@@ -181,14 +181,15 @@ class AuthenticationController extends Controller {
             $user['firstName'] = $_POST['firstName'];
             $user['idRole'] = $_POST['role'];
             if(UserRepository::insertEditOne($user)){
+                $main = new MainController();
                 $_SESSION['connectedUser'] = $_SESSION['login'];
                 $_SESSION['lastName'] = $user['lastName'];
                 $_SESSION['firstName'] = $user['firstName'];
                 $_SESSION['idRole'] = $user['idRole'];
-                $successText = 'Création du compte réussie';
+                $successText = 'Création du compte réussie, vous serez redirigé-e dans 2 secondes';
                 ob_start();
                 include('./view/successTemplate.php');
-                return ob_get_clean();
+                return ob_get_clean().$main->dispatch().'<script>setTimeout(function(){ window.location.assign(String(window.location.origin) + "'.ROOT_DIR.'"); }, 2000);</script>';
             } else {
                 return $this->displayError('accountCreationFailed');
             }
