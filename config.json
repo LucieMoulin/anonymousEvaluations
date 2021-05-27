@@ -164,7 +164,7 @@
         },
         {
             "format": "txt",
-            "active": true
+            "active": false
         }
     ],
     "returnAcceptedFormats":[
@@ -186,7 +186,7 @@
         },
         {
             "format": "txt",
-            "active": true
+            "active": false
         }
     ]
 }
