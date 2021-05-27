@@ -1,12 +1,13 @@
 # Plateforme web de gestion de retour d'évaluations anonymes
 Prérequis :
-•	Serveur Apache avec PHP 8 fonctionnel
-•	Serveur MySQL fonctionnel
+- Serveur Apache avec PHP 8 fonctionnel
+- Serveur MySQL fonctionnel
+
 Procédure :
 1.	Téléchargez le code source de la plateforme sur  GitHub : https://github.com/LucieMoulin/anonymousEvaluations
 2.	Dé-zipper l’archive téléchargée dans le dossier WEB de votre serveur Apache
 3.	Exécutez le script de création de la base de données createDatabase.sql disponible dans le contenu téléchargé, ainsi que le script insertRolesPermissionsStates.sql, insérant les rôles, permissions et états dans la base de données. Ces informations sont nécessaires au fonctionnement de la plateforme.
-    ATTENTION : le script createDatabase.sql va créer une base de donnée nommée db_anonymousevlauations. Si une base de donnée de ce nom est déjà présente sur votre serveur, elle sera supprimée.
+ATTENTION : le script createDatabase.sql va créer une base de donnée nommée db_anonymousevlauations. Si une base de donnée de ce nom est déjà présente sur votre serveur, elle sera supprimée.
 4.	Modifier le fichier constants.php en insérant les informations sur la base de données, ainsi que le nom du dossier dans lequel la plateforme est stockée. Constantes à modifier : DB_HOST, DB_NAME, DB_USER, DB_PASS, ROOT_DIR
 5.	Modifier le fichier .htaccess en spécifiant le chemin d’accès de l’index. 
 La plateforme est maintenant prête à être utilisée.
