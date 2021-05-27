@@ -21,6 +21,8 @@ SET time_zone = "+00:00";
 -- Base de données : `db_anonymousevaluations`
 --
 
+USE db_anonymousevaluations;
+
 --
 -- Déchargement des données de la table `t_permission`
 --
